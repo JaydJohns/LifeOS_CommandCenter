@@ -1281,6 +1281,7 @@
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="sendTaskNotifications()" id="notificationBtn">🔔 NOTIFY</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openHeatmapModal()">📈 HEATMAP</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openAnalyticsModal()">📉 ANALYTICS</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openSyncModal()">⚙️ SYNC</button>
             </div>
         </header>
 
@@ -1482,6 +1483,107 @@
                     <button class="modal-btn" onclick="closeAnalyticsModal()">CLOSE</button>
                     <button class="modal-btn" onclick="copyAnalyticsToClipboard()">📋 COPY</button>
                     <button class="modal-btn download" onclick="downloadAnalyticsReport()">⬇️ DOWNLOAD</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sync Modal -->
+        <div id="syncModal" class="modal" onclick="if(event.target === this) closeSyncModal()">
+            <div class="modal-content" style="max-width: 900px;">
+                <div class="modal-header">
+                    <div class="modal-title">⚙️ SYNC & INTEGRATION CENTER</div>
+                    <button class="modal-close" onclick="closeSyncModal()">✕</button>
+                </div>
+
+                <!-- Sync Tabs -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid rgba(0, 212, 255, 0.2); padding-bottom: 15px;">
+                    <button onclick="showSyncTab('export')" id="tab-export" class="sync-tab-btn active" style="background: rgba(0, 212, 255, 0.2); color: var(--primary); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-weight: 600; font-size: 0.8rem;">📥 EXPORT</button>
+                    <button onclick="showSyncTab('import')" id="tab-import" class="sync-tab-btn" style="background: transparent; color: var(--text-secondary); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-weight: 600; font-size: 0.8rem;">📤 IMPORT</button>
+                    <button onclick="showSyncTab('github')" id="tab-github" class="sync-tab-btn" style="background: transparent; color: var(--text-secondary); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-weight: 600; font-size: 0.8rem;">🐙 GITHUB</button>
+                </div>
+
+                <!-- Export Tab -->
+                <div id="syncTab-export" class="sync-tab-content">
+                    <h4 style="color: var(--primary); margin-bottom: 15px;">📥 EXPORT YOUR DATA</h4>
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Download all your tasks and settings as a JSON file for backup or migration.</p>
+                    <div style="background: rgba(0, 99, 255, 0.08); padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+                        <p style="font-size: 0.85rem; margin-bottom: 10px;"><strong>📦 Available Data:</strong></p>
+                        <ul style="list-style: none; padding: 0; font-size: 0.8rem; line-height: 1.8;">
+                            <li>✓ All 9 modules (tasks, priorities, estimates)</li>
+                            <li>✓ Notes and subtasks</li>
+                            <li>✓ Recurring task configuration</li>
+                            <li>✓ Creation dates and timestamps</li>
+                            <li>✓ Theme preference</li>
+                        </ul>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn download" onclick="exportDataAsJSON()">⬇️ DOWNLOAD BACKUP</button>
+                        <button class="modal-btn" onclick="copyDataToClipboard()">📋 COPY JSON</button>
+                    </div>
+                </div>
+
+                <!-- Import Tab -->
+                <div id="syncTab-import" class="sync-tab-content" style="display: none;">
+                    <h4 style="color: var(--primary); margin-bottom: 15px;">📤 IMPORT YOUR DATA</h4>
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Restore tasks from a previously exported JSON file.</p>
+                    <div style="background: rgba(255, 170, 0, 0.1); padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid rgba(255, 170, 0, 0.3);">
+                        <p style="font-size: 0.8rem; color: var(--warning);"><strong>⚠️ WARNING:</strong> Importing will merge with existing data. Back up first!</p>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--primary);">Paste your JSON data:</label>
+                        <textarea id="importJSON" style="width: 100%; height: 200px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 10px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.75rem; resize: vertical;"></textarea>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn" onclick="importDataFromJSON()">✓ IMPORT DATA</button>
+                        <button class="modal-btn" onclick="clearImportField()">🗑️ CLEAR</button>
+                    </div>
+                </div>
+
+                <!-- GitHub Tab -->
+                <div id="syncTab-github" class="sync-tab-content" style="display: none;">
+                    <h4 style="color: var(--primary); margin-bottom: 15px;">🐙 GITHUB ISSUES INTEGRATION</h4>
+                    <p style="margin-bottom: 15px; color: var(--text-secondary);">Export your tasks as GitHub Issues for collaborative tracking.</p>
+
+                    <div style="background: rgba(0, 99, 255, 0.08); padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+                        <p style="font-size: 0.85rem; margin-bottom: 10px;"><strong>📋 How it works:</strong></p>
+                        <ol style="font-size: 0.8rem; line-height: 1.8; padding-left: 20px;">
+                            <li>Copy your GitHub Personal Access Token (ghp_*)</li>
+                            <li>Enter repo in format: username/repository</li>
+                            <li>Select which tasks to export</li>
+                            <li>Issues created with priority labels and estimates</li>
+                        </ol>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary);">GitHub Token:</label>
+                        <input type="password" id="githubToken" placeholder="ghp_XXXXXXXXXXXX" style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px; border-radius: 4px; font-family: 'Space Mono', monospace;" />
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary);">Repository:</label>
+                        <input type="text" id="githubRepo" placeholder="username/repository" style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px; border-radius: 4px; font-family: 'Space Mono', monospace;" />
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary);">Export Options:</label>
+                        <div style="display: flex; gap: 15px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                                <input type="checkbox" id="gh-only-pending" checked /> Only pending tasks
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                                <input type="checkbox" id="gh-high-priority" /> High priority only
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button class="modal-btn download" onclick="exportToGitHubIssues()">🚀 EXPORT TO GITHUB</button>
+                        <button class="modal-btn" onclick="validateGitHubCredentials()">✓ TEST CONNECTION</button>
+                    </div>
+                </div>
+
+                <div class="modal-buttons" style="margin-top: 20px; border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 15px;">
+                    <button class="modal-btn" onclick="closeSyncModal()">CLOSE</button>
                 </div>
             </div>
         </div>
@@ -2858,6 +2960,311 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        // Sync Modal Functions
+        function openSyncModal() {
+            document.getElementById('syncModal').classList.add('active');
+        }
+
+        function closeSyncModal() {
+            document.getElementById('syncModal').classList.remove('active');
+        }
+
+        function showSyncTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.sync-tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // Remove active state from all buttons
+            document.querySelectorAll('.sync-tab-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text-secondary)';
+            });
+
+            // Show selected tab
+            const selectedTab = document.getElementById(`syncTab-${tabName}`);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+
+            // Set active button
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+                activeBtn.style.color = 'var(--primary)';
+            }
+        }
+
+        // Export Functions
+        function exportDataAsJSON() {
+            const allData = {};
+
+            // Collect all module data
+            modules.forEach(module => {
+                const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
+                allData[module.storageKey] = tasks;
+            });
+
+            // Add theme preference
+            allData['life-os-theme'] = localStorage.getItem('life-os-theme') || 'dark';
+            allData['export-date'] = new Date().toISOString();
+            allData['export-version'] = '2.0';
+
+            // Create download
+            const filename = `life-os-backup-${new Date().toISOString().split('T')[0]}.json`;
+            const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show confirmation
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ EXPORTED';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+
+        function copyDataToClipboard() {
+            const allData = {};
+
+            modules.forEach(module => {
+                const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
+                allData[module.storageKey] = tasks;
+            });
+
+            allData['life-os-theme'] = localStorage.getItem('life-os-theme') || 'dark';
+            allData['export-date'] = new Date().toISOString();
+
+            const jsonString = JSON.stringify(allData, null, 2);
+            const tempDiv = document.createElement('textarea');
+            tempDiv.value = jsonString;
+            document.body.appendChild(tempDiv);
+            tempDiv.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempDiv);
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ COPIED';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+
+        // Import Functions
+        function importDataFromJSON() {
+            try {
+                const jsonString = document.getElementById('importJSON').value.trim();
+
+                if (!jsonString) {
+                    alert('⚠️ Please paste JSON data first');
+                    return;
+                }
+
+                const importedData = JSON.parse(jsonString);
+
+                // Import module data
+                let importedCount = 0;
+                modules.forEach(module => {
+                    if (importedData[module.storageKey]) {
+                        localStorage.setItem(module.storageKey, JSON.stringify(importedData[module.storageKey]));
+                        importedCount++;
+                    }
+                });
+
+                // Import theme if present
+                if (importedData['life-os-theme']) {
+                    localStorage.setItem('life-os-theme', importedData['life-os-theme']);
+                }
+
+                alert(`✓ Successfully imported ${importedCount} modules!`);
+
+                // Refresh the app
+                location.reload();
+            } catch (error) {
+                alert(`❌ Error importing data: ${error.message}`);
+            }
+        }
+
+        function clearImportField() {
+            document.getElementById('importJSON').value = '';
+        }
+
+        // GitHub Integration Functions
+        function validateGitHubCredentials() {
+            const token = document.getElementById('githubToken').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+
+            if (!token || !repo) {
+                alert('⚠️ Please enter both GitHub token and repository');
+                return;
+            }
+
+            const [owner, repoName] = repo.split('/');
+
+            if (!owner || !repoName) {
+                alert('⚠️ Repository format should be: username/repository');
+                return;
+            }
+
+            // Test the connection
+            fetch(`https://api.github.com/repos/${owner}/${repoName}`, {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    alert('✓ Connection successful! Repository access verified.');
+                } else if (response.status === 404) {
+                    alert('❌ Repository not found');
+                } else if (response.status === 401) {
+                    alert('❌ Invalid GitHub token');
+                } else {
+                    alert(`❌ Error: ${response.status}`);
+                }
+            })
+            .catch(error => {
+                alert(`❌ Connection failed: ${error.message}`);
+            });
+        }
+
+        function exportToGitHubIssues() {
+            const token = document.getElementById('githubToken').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+            const onlyPending = document.getElementById('gh-only-pending').checked;
+            const highPriorityOnly = document.getElementById('gh-high-priority').checked;
+
+            if (!token || !repo) {
+                alert('⚠️ Please enter both GitHub token and repository');
+                return;
+            }
+
+            const [owner, repoName] = repo.split('/');
+
+            if (!owner || !repoName) {
+                alert('⚠️ Repository format should be: username/repository');
+                return;
+            }
+
+            // Collect tasks to export
+            const tasksToExport = [];
+
+            modules.forEach(module => {
+                const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
+                Object.entries(tasks).forEach(([id, taskData]) => {
+                    if (typeof taskData === 'object') {
+                        // Apply filters
+                        if (onlyPending && taskData.completed) return;
+                        if (highPriorityOnly && taskData.priority !== 'high') return;
+
+                        tasksToExport.push({
+                            title: `[${module.icon} ${module.name}] ${taskData.label}`,
+                            body: generateGitHubIssueBody(taskData, module),
+                            labels: generateGitHubLabels(taskData),
+                            priority: taskData.priority || 'medium'
+                        });
+                    }
+                });
+            });
+
+            if (tasksToExport.length === 0) {
+                alert('❌ No tasks match your filter criteria');
+                return;
+            }
+
+            // Export issues
+            let successCount = 0;
+            let failCount = 0;
+
+            const exportPromises = tasksToExport.map(task => {
+                return fetch(`https://api.github.com/repos/${owner}/${repoName}/issues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: task.title,
+                        body: task.body,
+                        labels: task.labels
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                })
+                .catch(error => {
+                    failCount++;
+                });
+            });
+
+            Promise.all(exportPromises).then(() => {
+                alert(`✓ Export complete!\n✓ Created: ${successCount} issues\n❌ Failed: ${failCount}`);
+            });
+        }
+
+        function generateGitHubIssueBody(taskData, module) {
+            let body = `**Module:** ${module.icon} ${module.name}\n\n`;
+            body += `**Status:** ${taskData.completed ? '✅ Completed' : '⏳ Pending'}\n`;
+            body += `**Priority:** ${taskData.priority === 'high' ? '🔴' : taskData.priority === 'low' ? '🟢' : '🟠'} ${taskData.priority.toUpperCase()}\n`;
+
+            if (taskData.estimate) {
+                body += `**Time Estimate:** ${taskData.estimate} hours\n`;
+            }
+
+            if (taskData.notes) {
+                body += `\n**Notes:**\n${taskData.notes}\n`;
+            }
+
+            if (taskData.subtasks && taskData.subtasks.length > 0) {
+                body += `\n**Subtasks:**\n`;
+                taskData.subtasks.forEach(subtask => {
+                    const status = subtask.completed ? '[x]' : '[ ]';
+                    body += `${status} ${subtask.label}\n`;
+                });
+            }
+
+            body += `\n---\n*Exported from Life OS on ${new Date().toLocaleString()}*`;
+            return body;
+        }
+
+        function generateGitHubLabels(taskData) {
+            const labels = [];
+
+            if (taskData.priority === 'high') {
+                labels.push('priority-high');
+            } else if (taskData.priority === 'low') {
+                labels.push('priority-low');
+            } else {
+                labels.push('priority-medium');
+            }
+
+            if (taskData.completed) {
+                labels.push('status-completed');
+            } else {
+                labels.push('status-pending');
+            }
+
+            if (taskData.estimate && taskData.estimate > 5) {
+                labels.push('large-task');
+            }
+
+            return labels;
         }
 
         // Initialize

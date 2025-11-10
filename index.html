@@ -27,6 +27,25 @@
             --glow-accent: 0 0 20px rgba(255, 0, 110, 0.3);
         }
 
+        /* Light Theme */
+        body.light-theme {
+            --primary: #0066cc;
+            --secondary: #0099ff;
+            --accent: #cc0066;
+            --success: #009900;
+            --warning: #ff9900;
+            --bg-dark: #f5f5f5;
+            --bg-darker: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --glow-primary: 0 0 20px rgba(0, 102, 204, 0.15);
+            --glow-accent: 0 0 20px rgba(204, 0, 102, 0.15);
+        }
+
+        body.light-theme body::before {
+            opacity: 0.1;
+        }
+
         body {
             font-family: 'Space Mono', monospace;
             background: radial-gradient(ellipse at 50% 0%, rgba(0, 99, 255, 0.1) 0%, transparent 50%),
@@ -70,6 +89,31 @@
             text-align: center;
             margin-bottom: 60px;
             animation: fadeInDown 0.8s ease-out;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
         }
 
         h1 {
@@ -490,6 +534,51 @@
             text-decoration: line-through;
         }
 
+        .task-actions {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .task-btn {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .task-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: var(--primary);
+        }
+
+        .task-btn.delete:hover {
+            background: rgba(255, 0, 110, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .task-btn.edit:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .task-item-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
         .add-task-section {
             margin-top: 24px;
             padding-top: 24px;
@@ -825,6 +914,7 @@
 <body>
     <div class="container">
         <header>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 LIGHT</button>
             <h1>⚡ LIFE OS</h1>
             <p class="subtitle">Advanced Personal Operating System</p>
             <div class="status-line">
@@ -1117,6 +1207,10 @@
                                     <span class="meta-item">⏱️ ${estimate}h</span>
                                 </div>
                             </div>
+                            <div class="task-actions">
+                                <button class="task-btn edit" onclick="editTask('${id}')">EDIT</button>
+                                <button class="task-btn delete" onclick="deleteTask('${id}')">DELETE</button>
+                            </div>
                         `;
                         checklist.appendChild(item);
                     });
@@ -1277,8 +1371,100 @@
             }
         }
 
+        function deleteTask(taskId) {
+            if (!currentModule) return;
+
+            if (!confirm('DELETE THIS TASK? THIS ACTION CANNOT BE UNDONE.')) {
+                return;
+            }
+
+            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
+            delete tasks[taskId];
+
+            localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
+            renderDetailView(currentModule);
+            renderDashboard();
+            updateGlobalStats();
+        }
+
+        function editTask(taskId) {
+            if (!currentModule) return;
+
+            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
+            const taskData = tasks[taskId];
+
+            if (!taskData || typeof taskData !== 'object') {
+                alert('TASK NOT FOUND OR INVALID FORMAT');
+                return;
+            }
+
+            const newLabel = prompt('EDIT TASK DESCRIPTION:', taskData.label);
+            if (newLabel === null) return;
+
+            if (!newLabel.trim()) {
+                alert('TASK DESCRIPTION CANNOT BE EMPTY');
+                return;
+            }
+
+            if (newLabel.length > 100) {
+                alert('TASK DESCRIPTION TOO LONG (MAX 100 CHARACTERS)');
+                return;
+            }
+
+            const priorityOptions = 'Select priority:\n1. HIGH\n2. MEDIUM\n3. LOW\n\nEnter 1, 2, or 3:';
+            const priorityInput = prompt(priorityOptions, '2');
+            if (priorityInput === null) return;
+
+            const priorityMap = { '1': 'high', '2': 'medium', '3': 'low' };
+            const newPriority = priorityMap[priorityInput];
+
+            if (!newPriority) {
+                alert('INVALID PRIORITY SELECTION');
+                return;
+            }
+
+            const estimateInput = prompt('EDIT TIME ESTIMATE (hours):', taskData.estimate);
+            if (estimateInput === null) return;
+
+            const newEstimate = parseFloat(estimateInput);
+            if (isNaN(newEstimate) || newEstimate < 0 || newEstimate > 1000) {
+                alert('TIME ESTIMATE MUST BE BETWEEN 0 AND 1000 HOURS');
+                return;
+            }
+
+            taskData.label = newLabel.toUpperCase();
+            taskData.priority = newPriority;
+            taskData.estimate = newEstimate;
+
+            tasks[taskId] = taskData;
+            localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
+            renderDetailView(currentModule);
+            renderDashboard();
+            updateGlobalStats();
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-theme');
+
+            // Save theme preference
+            const theme = body.classList.contains('light-theme') ? 'light' : 'dark';
+            localStorage.setItem('life-os-theme', theme);
+
+            // Update button text
+            const themeBtn = document.querySelector('.theme-toggle');
+            themeBtn.textContent = theme === 'light' ? '🌙 DARK' : '🌓 LIGHT';
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Load saved theme preference
+            const savedTheme = localStorage.getItem('life-os-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                document.querySelector('.theme-toggle').textContent = '🌙 DARK';
+            }
+
             modules.forEach(m => initializeDefaultTasks(m));
             renderDashboard();
             updateGlobalStats();

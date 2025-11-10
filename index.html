@@ -1280,6 +1280,7 @@
                 <button style="margin-left: 30px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="generateWeeklyDigest()">📊 WEEKLY DIGEST</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="sendTaskNotifications()" id="notificationBtn">🔔 NOTIFY</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openHeatmapModal()">📈 HEATMAP</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openAnalyticsModal()">📉 ANALYTICS</button>
             </div>
         </header>
 
@@ -1465,6 +1466,22 @@
                 <div class="modal-buttons">
                     <button class="modal-btn" onclick="closeNotesModal()">CLOSE</button>
                     <button class="modal-btn download" onclick="saveTaskDetails()">💾 SAVE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Modal -->
+        <div id="analyticsModal" class="modal" onclick="if(event.target === this) closeAnalyticsModal()">
+            <div class="modal-content" style="max-width: 1000px; max-height: 85vh;">
+                <div class="modal-header">
+                    <div class="modal-title">📉 PERFORMANCE ANALYTICS</div>
+                    <button class="modal-close" onclick="closeAnalyticsModal()">✕</button>
+                </div>
+                <div id="analyticsContent" style="overflow-y: auto; height: 550px; padding: 20px; background: rgba(0, 99, 255, 0.08); border-radius: 4px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.6;"></div>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="closeAnalyticsModal()">CLOSE</button>
+                    <button class="modal-btn" onclick="copyAnalyticsToClipboard()">📋 COPY</button>
+                    <button class="modal-btn download" onclick="downloadAnalyticsReport()">⬇️ DOWNLOAD</button>
                 </div>
             </div>
         </div>
@@ -2618,6 +2635,229 @@
 
         function closeHeatmapModal() {
             document.getElementById('heatmapModal').classList.remove('active');
+        }
+
+        function openAnalyticsModal() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Calculate 30-day window
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+
+            let analyticsHTML = '';
+            analyticsHTML += `<h3 style="color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid rgba(0, 212, 255, 0.3); padding-bottom: 10px;">PERFORMANCE ANALYTICS DASHBOARD</h3>`;
+            analyticsHTML += `<p style="margin-bottom: 20px;"><strong>Generated:</strong> ${new Date().toLocaleString()}</p>`;
+
+            // Collect data
+            let allTasks = [];
+            let moduleStats = [];
+            let totalTasksCompleted = 0;
+            let totalTasksCreated = 0;
+            let totalHoursCompleted = 0;
+            let totalHoursEstimated = 0;
+            let highPriorityCompleted = 0;
+            let highPriorityTotal = 0;
+
+            modules.forEach(module => {
+                const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
+                let moduleCompleted = 0;
+                let moduleCreated = 0;
+                let moduleHoursCompleted = 0;
+                let moduleHoursEstimated = 0;
+                let moduleHighPriority = 0;
+                let moduleHighPriorityCompleted = 0;
+
+                Object.entries(tasks).forEach(([id, taskData]) => {
+                    if (typeof taskData === 'object') {
+                        const createdDate = new Date(taskData.createdAt || 0);
+                        createdDate.setHours(0, 0, 0, 0);
+                        const isThisMonth = createdDate >= thirtyDaysAgo && createdDate <= today;
+
+                        if (isThisMonth) {
+                            moduleCreated++;
+                            totalTasksCreated++;
+                            const estimate = taskData.estimate || 0;
+                            moduleHoursEstimated += estimate;
+                            totalHoursEstimated += estimate;
+
+                            if (taskData.completed) {
+                                moduleCompleted++;
+                                totalTasksCompleted++;
+                                moduleHoursCompleted += estimate;
+                                totalHoursCompleted += estimate;
+                            }
+
+                            if (taskData.priority === 'high') {
+                                moduleHighPriority++;
+                                highPriorityTotal++;
+                                if (taskData.completed) {
+                                    moduleHighPriorityCompleted++;
+                                    highPriorityCompleted++;
+                                }
+                            }
+
+                            allTasks.push({
+                                module: module.name,
+                                icon: module.icon,
+                                label: taskData.label,
+                                completed: taskData.completed,
+                                priority: taskData.priority || 'medium',
+                                estimate: estimate,
+                                createdDate: createdDate
+                            });
+                        }
+                    }
+                });
+
+                if (moduleCreated > 0) {
+                    moduleStats.push({
+                        name: module.name,
+                        icon: module.icon,
+                        created: moduleCreated,
+                        completed: moduleCompleted,
+                        hoursEstimated: moduleHoursEstimated,
+                        hoursCompleted: moduleHoursCompleted,
+                        highPriority: moduleHighPriority,
+                        highPriorityCompleted: moduleHighPriorityCompleted
+                    });
+                }
+            });
+
+            // Overall Summary
+            analyticsHTML += `<h3 style="color: var(--primary); margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid rgba(0, 212, 255, 0.3); padding-bottom: 10px;">OVERALL SUMMARY (Last 30 Days)</h3>`;
+            analyticsHTML += `<table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">`;
+
+            const taskCompletionRate = totalTasksCreated > 0 ? Math.round((totalTasksCompleted / totalTasksCreated) * 100) : 0;
+            const hourCompletionRate = totalHoursEstimated > 0 ? Math.round((totalHoursCompleted / totalHoursEstimated) * 100) : 0;
+            const highPriorityRate = highPriorityTotal > 0 ? Math.round((highPriorityCompleted / highPriorityTotal) * 100) : 0;
+            const avgTasksPerDay = totalTasksCreated > 0 ? (totalTasksCreated / 30).toFixed(1) : 0;
+            const avgHoursPerDay = totalHoursEstimated > 0 ? (totalHoursEstimated / 30).toFixed(1) : 0;
+
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Tasks Created:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right; color: var(--primary);">${totalTasksCreated}</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Tasks Completed:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right; color: var(--success);">${totalTasksCompleted}</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Completion Rate:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right; color: ${taskCompletionRate >= 75 ? 'var(--success)' : taskCompletionRate >= 50 ? 'var(--warning)' : 'var(--accent)'};">${taskCompletionRate}%</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Hours Estimated:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right;">${totalHoursEstimated.toFixed(1)}h</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Hours Completed:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right; color: var(--success);">${totalHoursCompleted.toFixed(1)}h</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Hour Completion Rate:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right; color: ${hourCompletionRate >= 75 ? 'var(--success)' : hourCompletionRate >= 50 ? 'var(--warning)' : 'var(--accent)'};">${hourCompletionRate}%</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>High Priority (Completed/Total):</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right; color: var(--accent);">${highPriorityCompleted}/${highPriorityTotal} (${highPriorityRate}%)</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr style="border-bottom: 1px solid rgba(0, 212, 255, 0.2);">`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Avg Tasks/Day:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right;">${avgTasksPerDay}</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `<tr>`;
+            analyticsHTML += `<td style="padding: 10px;"><strong>Avg Hours/Day:</strong></td>`;
+            analyticsHTML += `<td style="padding: 10px; text-align: right;">${avgHoursPerDay}h</td>`;
+            analyticsHTML += `</tr>`;
+            analyticsHTML += `</table>`;
+
+            // Module Performance
+            if (moduleStats.length > 0) {
+                analyticsHTML += `<h3 style="color: var(--primary); margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid rgba(0, 212, 255, 0.3); padding-bottom: 10px;">MODULE PERFORMANCE</h3>`;
+
+                // Sort by completion rate
+                moduleStats.sort((a, b) => {
+                    const rateA = a.created > 0 ? (a.completed / a.created) : 0;
+                    const rateB = b.created > 0 ? (b.completed / b.created) : 0;
+                    return rateB - rateA;
+                });
+
+                moduleStats.forEach(mod => {
+                    const rate = mod.created > 0 ? Math.round((mod.completed / mod.created) * 100) : 0;
+                    analyticsHTML += `<div style="background: rgba(0, 99, 255, 0.1); padding: 12px; margin-bottom: 12px; border-radius: 4px; border-left: 4px solid ${rate >= 75 ? 'var(--success)' : rate >= 50 ? 'var(--warning)' : 'var(--accent)'};">`;
+                    analyticsHTML += `<h4 style="color: var(--primary); margin-bottom: 8px;">${mod.icon} ${mod.name}</h4>`;
+                    analyticsHTML += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem;">`;
+                    analyticsHTML += `<div><strong>Completion:</strong> ${mod.completed}/${mod.created} (${rate}%)</div>`;
+                    analyticsHTML += `<div><strong>Hours:</strong> ${mod.hoursCompleted.toFixed(1)}/${mod.hoursEstimated.toFixed(1)}h</div>`;
+                    if (mod.highPriority > 0) {
+                        const highRate = Math.round((mod.highPriorityCompleted / mod.highPriority) * 100);
+                        analyticsHTML += `<div style="color: var(--accent);"><strong>High Priority:</strong> ${mod.highPriorityCompleted}/${mod.highPriority} (${highRate}%)</div>`;
+                    }
+                    analyticsHTML += `</div>`;
+                    analyticsHTML += `</div>`;
+                });
+
+                // Best and Worst
+                const bestModule = moduleStats[0];
+                const worstModule = moduleStats[moduleStats.length - 1];
+                analyticsHTML += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">`;
+                analyticsHTML += `<div style="background: rgba(0, 255, 136, 0.15); padding: 12px; border-radius: 4px; border: 1px solid var(--success);">`;
+                analyticsHTML += `<strong style="color: var(--success);">🏆 Best Performer</strong><br>`;
+                analyticsHTML += `${bestModule.icon} ${bestModule.name}<br>`;
+                const bestRate = bestModule.created > 0 ? Math.round((bestModule.completed / bestModule.created) * 100) : 0;
+                analyticsHTML += `<small style="color: var(--text-secondary);">${bestRate}% completion rate</small>`;
+                analyticsHTML += `</div>`;
+                analyticsHTML += `<div style="background: rgba(255, 0, 110, 0.15); padding: 12px; border-radius: 4px; border: 1px solid var(--accent);">`;
+                analyticsHTML += `<strong style="color: var(--accent);">⚠️ Needs Attention</strong><br>`;
+                analyticsHTML += `${worstModule.icon} ${worstModule.name}<br>`;
+                const worstRate = worstModule.created > 0 ? Math.round((worstModule.completed / worstModule.created) * 100) : 0;
+                analyticsHTML += `<small style="color: var(--text-secondary);">${worstRate}% completion rate</small>`;
+                analyticsHTML += `</div>`;
+                analyticsHTML += `</div>`;
+            }
+
+            analyticsHTML += `<hr style="border: none; border-top: 1px solid rgba(0, 212, 255, 0.2); margin: 25px 0;">`;
+            analyticsHTML += `<p style="font-size: 0.75rem; color: var(--text-secondary); text-align: center;">Performance data calculated from tasks created in the last 30 days</p>`;
+
+            document.getElementById('analyticsContent').innerHTML = analyticsHTML;
+            document.getElementById('analyticsModal').classList.add('active');
+        }
+
+        function closeAnalyticsModal() {
+            document.getElementById('analyticsModal').classList.remove('active');
+        }
+
+        function copyAnalyticsToClipboard() {
+            const text = document.getElementById('analyticsContent').innerText;
+            const tempDiv = document.createElement('textarea');
+            tempDiv.value = text;
+            document.body.appendChild(tempDiv);
+            tempDiv.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempDiv);
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ COPIED';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+
+        function downloadAnalyticsReport() {
+            const text = document.getElementById('analyticsContent').innerText;
+            const filename = `life-os-analytics-${new Date().toISOString().split('T')[0]}.txt`;
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // Initialize

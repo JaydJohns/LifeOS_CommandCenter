@@ -687,6 +687,29 @@
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
         }
 
+        .modal-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Global keyboard focus styles */
+        button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        input:focus-visible, textarea:focus-visible {
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1);
+        }
+
+        /* Header button focus */
+        header button:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
         .modal-btn.download {
             background: rgba(0, 255, 136, 0.15);
             border-color: var(--success);
@@ -1260,8 +1283,8 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <button class="theme-toggle" onclick="toggleTheme()">🌓 LIGHT</button>
+        <header role="banner">
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle between light and dark theme" aria-pressed="false" id="themeToggle">🌓 LIGHT</button>
             <h1>⚡ LIFE OS</h1>
             <p class="subtitle">Advanced Personal Operating System</p>
             <div class="status-line">
@@ -1277,11 +1300,11 @@
                     <span class="status-dot"></span>
                     <span>NEURAL SYNC OK</span>
                 </div>
-                <button style="margin-left: 30px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="generateWeeklyDigest()">📊 WEEKLY DIGEST</button>
-                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="sendTaskNotifications()" id="notificationBtn">🔔 NOTIFY</button>
-                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openHeatmapModal()">📈 HEATMAP</button>
-                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openAnalyticsModal()">📉 ANALYTICS</button>
-                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openSyncModal()">⚙️ SYNC</button>
+                <button style="margin-left: 30px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="generateWeeklyDigest()" aria-label="Generate weekly digest report with task statistics and completion metrics" aria-expanded="false" id="weeklyDigestBtn">📊 WEEKLY DIGEST</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="sendTaskNotifications()" id="notificationBtn" aria-label="Send browser notifications for pending and high-priority tasks" aria-pressed="false">🔔 NOTIFY</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openHeatmapModal()" aria-label="View 90-day activity heatmap showing task completion intensity" aria-expanded="false" id="heatmapBtn">📈 HEATMAP</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openAnalyticsModal()" aria-label="View performance analytics with 30-day metrics and trends" aria-expanded="false" id="analyticsBtn">📉 ANALYTICS</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openSyncModal()" aria-label="Sync center for data export, import, and GitHub integration" aria-expanded="false" id="syncBtn">⚙️ SYNC</button>
             </div>
         </header>
 
@@ -1370,11 +1393,11 @@
         </div>
 
         <!-- Export Modal -->
-        <div id="exportModal" class="modal" onclick="if(event.target === this) closeExportModal()">
+        <div id="exportModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle" onclick="if(event.target === this) closeExportModal()">
             <div class="modal-content">
                 <div class="modal-header">
-                    <div class="modal-title">📥 EXPORT MARKDOWN</div>
-                    <button class="modal-close" onclick="closeExportModal()">✕</button>
+                    <div class="modal-title" id="exportModalTitle">📥 EXPORT MARKDOWN</div>
+                    <button class="modal-close" onclick="closeExportModal()" aria-label="Close export dialog">✕</button>
                 </div>
                 <textarea id="exportTextarea" class="export-textarea" readonly></textarea>
                 <div class="modal-buttons">
@@ -1385,11 +1408,11 @@
         </div>
 
         <!-- Heatmap Modal -->
-        <div id="heatmapModal" class="modal" onclick="if(event.target === this) closeHeatmapModal()">
+        <div id="heatmapModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="heatmapModalTitle" onclick="if(event.target === this) closeHeatmapModal()">
             <div class="modal-content" style="max-width: 900px;">
                 <div class="modal-header">
-                    <div class="modal-title">📈 ACTIVITY HEATMAP</div>
-                    <button class="modal-close" onclick="closeHeatmapModal()">✕</button>
+                    <div class="modal-title" id="heatmapModalTitle">📈 ACTIVITY HEATMAP</div>
+                    <button class="modal-close" onclick="closeHeatmapModal()" aria-label="Close heatmap dialog">✕</button>
                 </div>
                 <div class="heatmap-container">
                     <div id="heatmapContent" style="overflow-y: auto; max-height: 500px;"></div>
@@ -1423,11 +1446,11 @@
         </div>
 
         <!-- Weekly Digest Modal -->
-        <div id="digestModal" class="modal" onclick="if(event.target === this) closeDigestModal()">
+        <div id="digestModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="digestModalTitle" onclick="if(event.target === this) closeDigestModal()">
             <div class="modal-content" style="max-width: 800px; max-height: 85vh;">
                 <div class="modal-header">
-                    <div class="modal-title">📊 WEEKLY DIGEST REPORT</div>
-                    <button class="modal-close" onclick="closeDigestModal()">✕</button>
+                    <div class="modal-title" id="digestModalTitle">📊 WEEKLY DIGEST REPORT</div>
+                    <button class="modal-close" onclick="closeDigestModal()" aria-label="Close digest dialog">✕</button>
                 </div>
                 <div id="digestContent" style="overflow-y: auto; height: 500px; padding: 20px; background: rgba(0, 99, 255, 0.08); border-radius: 4px; margin-bottom: 20px; font-size: 0.9rem; line-height: 1.6;"></div>
                 <div class="modal-buttons">
@@ -1439,11 +1462,11 @@
         </div>
 
         <!-- Notes & Subtasks Modal -->
-        <div id="notesModal" class="modal" onclick="if(event.target === this) closeNotesModal()">
+        <div id="notesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="notesModalTitle" onclick="if(event.target === this) closeNotesModal()">
             <div class="modal-content" style="max-width: 700px;">
                 <div class="modal-header">
-                    <div class="modal-title">📝 TASK DETAILS</div>
-                    <button class="modal-close" onclick="closeNotesModal()">✕</button>
+                    <div class="modal-title" id="notesModalTitle">📝 TASK DETAILS</div>
+                    <button class="modal-close" onclick="closeNotesModal()" aria-label="Close task details dialog">✕</button>
                 </div>
 
                 <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(0, 212, 255, 0.2);">
@@ -1472,11 +1495,11 @@
         </div>
 
         <!-- Analytics Modal -->
-        <div id="analyticsModal" class="modal" onclick="if(event.target === this) closeAnalyticsModal()">
+        <div id="analyticsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="analyticsModalTitle" onclick="if(event.target === this) closeAnalyticsModal()">
             <div class="modal-content" style="max-width: 1000px; max-height: 85vh;">
                 <div class="modal-header">
-                    <div class="modal-title">📉 PERFORMANCE ANALYTICS</div>
-                    <button class="modal-close" onclick="closeAnalyticsModal()">✕</button>
+                    <div class="modal-title" id="analyticsModalTitle">📉 PERFORMANCE ANALYTICS</div>
+                    <button class="modal-close" onclick="closeAnalyticsModal()" aria-label="Close analytics dialog">✕</button>
                 </div>
                 <div id="analyticsContent" style="overflow-y: auto; height: 550px; padding: 20px; background: rgba(0, 99, 255, 0.08); border-radius: 4px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.6;"></div>
                 <div class="modal-buttons">
@@ -1488,11 +1511,11 @@
         </div>
 
         <!-- Sync Modal -->
-        <div id="syncModal" class="modal" onclick="if(event.target === this) closeSyncModal()">
+        <div id="syncModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="syncModalTitle" onclick="if(event.target === this) closeSyncModal()">
             <div class="modal-content" style="max-width: 900px;">
                 <div class="modal-header">
-                    <div class="modal-title">⚙️ SYNC & INTEGRATION CENTER</div>
-                    <button class="modal-close" onclick="closeSyncModal()">✕</button>
+                    <div class="modal-title" id="syncModalTitle">⚙️ SYNC & INTEGRATION CENTER</div>
+                    <button class="modal-close" onclick="closeSyncModal()" aria-label="Close sync center dialog">✕</button>
                 </div>
 
                 <!-- Sync Tabs -->
@@ -1530,8 +1553,9 @@
                         <p style="font-size: 0.8rem; color: var(--warning);"><strong>⚠️ WARNING:</strong> Importing will merge with existing data. Back up first!</p>
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--primary);">Paste your JSON data:</label>
-                        <textarea id="importJSON" style="width: 100%; height: 200px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 10px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.75rem; resize: vertical;"></textarea>
+                        <label for="importJSON" style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--primary);">Paste your JSON data:</label>
+                        <textarea id="importJSON" aria-label="Paste exported JSON data" aria-describedby="importJSONHelper" style="width: 100%; height: 200px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 10px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.75rem; resize: vertical;"></textarea>
+                        <small id="importJSONHelper" style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 0.75rem;">Paste complete JSON from exported backup file</small>
                     </div>
                     <div class="modal-buttons">
                         <button class="modal-btn" onclick="importDataFromJSON()">✓ IMPORT DATA</button>
@@ -1555,13 +1579,15 @@
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary);">GitHub Token:</label>
-                        <input type="password" id="githubToken" placeholder="ghp_XXXXXXXXXXXX" style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px; border-radius: 4px; font-family: 'Space Mono', monospace;" />
+                        <label for="githubToken" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary);">GitHub Token:</label>
+                        <input type="password" id="githubToken" placeholder="ghp_XXXXXXXXXXXX" aria-label="GitHub Personal Access Token" aria-describedby="tokenHelper" style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px; border-radius: 4px; font-family: 'Space Mono', monospace;" />
+                        <small id="tokenHelper" style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 0.75rem;">Create token at github.com/settings/tokens with repo permissions</small>
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary);">Repository:</label>
-                        <input type="text" id="githubRepo" placeholder="username/repository" style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px; border-radius: 4px; font-family: 'Space Mono', monospace;" />
+                        <label for="githubRepo" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary);">Repository:</label>
+                        <input type="text" id="githubRepo" placeholder="username/repository" aria-label="GitHub repository in format username/repository" aria-describedby="repoHelper" style="width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px; border-radius: 4px; font-family: 'Space Mono', monospace;" />
+                        <small id="repoHelper" style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 0.75rem;">Format: username/repository-name</small>
                     </div>
 
                     <div style="margin-bottom: 15px;">
@@ -2636,9 +2662,10 @@
             const theme = body.classList.contains('light-theme') ? 'light' : 'dark';
             localStorage.setItem('life-os-theme', theme);
 
-            // Update button text
+            // Update button text and ARIA state
             const themeBtn = document.querySelector('.theme-toggle');
             themeBtn.textContent = theme === 'light' ? '🌙 DARK' : '🌓 LIGHT';
+            themeBtn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
         }
 
         function openHeatmapModal() {
@@ -2733,10 +2760,12 @@
 
             document.getElementById('heatmapContent').innerHTML = heatmapHTML;
             document.getElementById('heatmapModal').classList.add('active');
+            document.getElementById('heatmapBtn').setAttribute('aria-expanded', 'true');
         }
 
         function closeHeatmapModal() {
             document.getElementById('heatmapModal').classList.remove('active');
+            document.getElementById('heatmapBtn').setAttribute('aria-expanded', 'false');
         }
 
         function openAnalyticsModal() {
@@ -2924,10 +2953,12 @@
 
             document.getElementById('analyticsContent').innerHTML = analyticsHTML;
             document.getElementById('analyticsModal').classList.add('active');
+            document.getElementById('analyticsBtn').setAttribute('aria-expanded', 'true');
         }
 
         function closeAnalyticsModal() {
             document.getElementById('analyticsModal').classList.remove('active');
+            document.getElementById('analyticsBtn').setAttribute('aria-expanded', 'false');
         }
 
         function copyAnalyticsToClipboard() {
@@ -2965,10 +2996,12 @@
         // Sync Modal Functions
         function openSyncModal() {
             document.getElementById('syncModal').classList.add('active');
+            document.getElementById('syncBtn').setAttribute('aria-expanded', 'true');
         }
 
         function closeSyncModal() {
             document.getElementById('syncModal').classList.remove('active');
+            document.getElementById('syncBtn').setAttribute('aria-expanded', 'false');
         }
 
         function showSyncTab(tabName) {
@@ -3271,9 +3304,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Load saved theme preference
             const savedTheme = localStorage.getItem('life-os-theme');
+            const themeBtn = document.querySelector('.theme-toggle');
             if (savedTheme === 'light') {
                 document.body.classList.add('light-theme');
-                document.querySelector('.theme-toggle').textContent = '🌙 DARK';
+                themeBtn.textContent = '🌙 DARK';
+                themeBtn.setAttribute('aria-pressed', 'true');
+            } else {
+                themeBtn.setAttribute('aria-pressed', 'false');
             }
 
             // Request notification permission

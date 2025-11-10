@@ -1629,6 +1629,213 @@
             domains: 'life-os-domain-items'
         };
 
+        // ============================================
+        // STORAGE VALIDATION & ERROR HANDLING UTILITIES
+        // ============================================
+
+        /**
+         * Check if localStorage is available and functional
+         * @returns {boolean} True if localStorage is available
+         */
+        function isStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch(e) {
+                console.error('localStorage is not available:', e);
+                return false;
+            }
+        }
+
+        /**
+         * Validate task data structure
+         * @param {object} task - Task object to validate
+         * @returns {boolean} True if task has valid structure
+         */
+        function isValidTask(task) {
+            if (!task || typeof task !== 'object') return false;
+
+            // Check required fields
+            if (typeof task.label !== 'string' || !task.label.trim()) return false;
+            if (typeof task.completed !== 'boolean') return false;
+            if (typeof task.priority !== 'string') return false;
+            if (!['high', 'medium', 'low'].includes(task.priority)) return false;
+            if (typeof task.estimate !== 'number' || task.estimate < 0) return false;
+            if (typeof task.createdAt !== 'number' || task.createdAt < 0) return false;
+
+            // Optional fields validation
+            if (task.recurrence && !['none', 'daily', 'weekly', 'monthly'].includes(task.recurrence)) return false;
+            if (task.notes && typeof task.notes !== 'string') return false;
+            if (task.subtasks && !Array.isArray(task.subtasks)) return false;
+            if (task.dueDate && typeof task.dueDate !== 'number') return false;
+
+            return true;
+        }
+
+        /**
+         * Sanitize and repair corrupted task data
+         * @param {object} task - Potentially corrupted task
+         * @returns {object} Repaired task object
+         */
+        function repairTaskData(task) {
+            if (typeof task !== 'object' || !task) {
+                return null;
+            }
+
+            // If it's just a boolean (legacy format), skip it
+            if (typeof task === 'boolean') {
+                return null;
+            }
+
+            const repaired = {
+                label: (typeof task.label === 'string' && task.label.trim()) ? task.label : 'TASK',
+                completed: typeof task.completed === 'boolean' ? task.completed : false,
+                priority: ['high', 'medium', 'low'].includes(task.priority) ? task.priority : 'medium',
+                estimate: (typeof task.estimate === 'number' && task.estimate >= 0) ? task.estimate : 1,
+                createdAt: (typeof task.createdAt === 'number' && task.createdAt > 0) ? task.createdAt : Date.now(),
+                dueDate: (typeof task.dueDate === 'number' && task.dueDate > 0) ? task.dueDate : Date.now(),
+                recurrence: (task.recurrence && ['daily', 'weekly', 'monthly'].includes(task.recurrence)) ? task.recurrence : 'none'
+            };
+
+            // Preserve optional fields if valid
+            if (typeof task.notes === 'string') {
+                repaired.notes = task.notes;
+            }
+            if (Array.isArray(task.subtasks)) {
+                repaired.subtasks = task.subtasks.filter(st =>
+                    st && typeof st === 'object' && typeof st.label === 'string'
+                );
+            }
+
+            return repaired;
+        }
+
+        /**
+         * Safe localStorage retrieval with error handling and validation
+         * @param {string} key - Storage key
+         * @returns {object} Parsed and validated data, or empty object if unavailable
+         */
+        function getStorageData(key) {
+            try {
+                if (!isStorageAvailable()) {
+                    console.warn('localStorage not available, returning empty data');
+                    return {};
+                }
+
+                const data = localStorage.getItem(key);
+                if (!data) {
+                    return {};
+                }
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(data);
+                } catch(e) {
+                    console.error(`Failed to parse data for key "${key}":`, e);
+                    // Clear corrupted data
+                    try {
+                        localStorage.removeItem(key);
+                    } catch(clearError) {
+                        console.error('Failed to clear corrupted data:', clearError);
+                    }
+                    return {};
+                }
+
+                // Validate and repair task data
+                if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                    const validated = {};
+                    let repairsNeeded = false;
+
+                    for (const [taskId, taskData] of Object.entries(parsed)) {
+                        if (isValidTask(taskData)) {
+                            validated[taskId] = taskData;
+                        } else {
+                            const repaired = repairTaskData(taskData);
+                            if (repaired) {
+                                validated[taskId] = repaired;
+                                repairsNeeded = true;
+                            }
+                        }
+                    }
+
+                    // Save repaired data back to storage
+                    if (repairsNeeded) {
+                        try {
+                            localStorage.setItem(key, JSON.stringify(validated));
+                            console.warn(`Repaired corrupted data for key "${key}"`);
+                        } catch(saveError) {
+                            console.error('Failed to save repaired data:', saveError);
+                        }
+                    }
+
+                    return validated;
+                }
+
+                return {};
+            } catch(error) {
+                console.error(`Error retrieving storage data for key "${key}":`, error);
+                return {};
+            }
+        }
+
+        /**
+         * Safe localStorage setting with quota and error handling
+         * @param {string} key - Storage key
+         * @param {object} data - Data to store
+         * @returns {boolean} True if storage was successful
+         */
+        function setStorageData(key, data) {
+            try {
+                if (!isStorageAvailable()) {
+                    console.warn('localStorage not available, cannot save data');
+                    return false;
+                }
+
+                const jsonString = JSON.stringify(data);
+
+                // Check if data is too large (rough estimate)
+                if (jsonString.length > 5 * 1024 * 1024) {
+                    console.error('Data exceeds storage limit (5MB)');
+                    return false;
+                }
+
+                localStorage.setItem(key, jsonString);
+                return true;
+            } catch(error) {
+                if (error.name === 'QuotaExceededError' || error.message.includes('quota')) {
+                    console.error(`Storage quota exceeded for key "${key}"`);
+                    // Could implement cleanup strategy here (e.g., remove old data)
+                } else {
+                    console.error(`Error saving storage data for key "${key}":`, error);
+                }
+                return false;
+            }
+        }
+
+        /**
+         * Validate all storage data across all modules
+         * @returns {object} Validation report with counts of issues found
+         */
+        function validateAllStorage() {
+            const report = {
+                modulesChecked: 0,
+                tasksValidated: 0,
+                tasksCorrected: 0,
+                errors: []
+            };
+
+            modules.forEach(module => {
+                report.modulesChecked++;
+                const data = getStorageData(module.storageKey);
+                const taskCount = Object.keys(data).length;
+                report.tasksValidated += taskCount;
+            });
+
+            return report;
+        }
+
         const modules = [
             { id: 'afr', name: 'Annual Review', icon: '🎯', description: 'Faculty evaluation and self-assessment', storageKey: STORAGE_KEYS.afr, defaultTasks: ['COLLECT TEACHING EVALUATIONS', 'DOCUMENT SERVICE CONTRIBUTIONS', 'COMPILE RESEARCH ACTIVITIES', 'PROFESSIONAL DEVELOPMENT SUMMARY', 'SELF-EVALUATION NARRATIVE', 'GOAL SETTING FOR NEXT CYCLE'] },
             { id: 'uxr', name: 'UXR Lab', icon: '🧪', description: 'User research projects and studies', storageKey: STORAGE_KEYS.uxr, defaultTasks: ['USER RESEARCH PLANNING', 'PARTICIPANT RECRUITMENT', 'CONDUCT INTERVIEWS', 'DATA ANALYSIS', 'FINDINGS DOCUMENTATION', 'PRESENT RESULTS'] },
@@ -1820,7 +2027,7 @@
         }
 
         function renderDetailView(module) {
-            const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
+            const tasks = getStorageData(module.storageKey);
             const taskIds = Object.keys(tasks);
             const completed = taskIds.filter(id => {
                 const task = tasks[id];
@@ -1940,109 +2147,126 @@
         function updateModuleProgress(changedTaskId) {
             if (!currentModule) return;
 
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
+            try {
+                const tasks = getStorageData(currentModule.storageKey);
 
-            // Save state for undo/redo before making changes
-            UndoRedoManager.saveState(`Task ${changedTaskId ? 'completed' : 'updated'}`);
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Task ${changedTaskId ? 'completed' : 'updated'}`);
 
-            document.querySelectorAll('#detailChecklist input[type="checkbox"]').forEach(cb => {
-                if (tasks[cb.id]) {
-                    const taskData = tasks[cb.id];
-                    if (typeof taskData === 'object') {
-                        taskData.completed = cb.checked;
+                document.querySelectorAll('#detailChecklist input[type="checkbox"]').forEach(cb => {
+                    if (tasks[cb.id]) {
+                        const taskData = tasks[cb.id];
+                        if (typeof taskData === 'object') {
+                            taskData.completed = cb.checked;
 
-                        // Handle recurring tasks - create next instance when checked
-                        if (cb.checked && taskData.recurrence && taskData.recurrence !== 'none') {
-                            const nextDate = new Date(taskData.dueDate || Date.now());
-                            switch(taskData.recurrence) {
-                                case 'daily':
-                                    nextDate.setDate(nextDate.getDate() + 1);
-                                    break;
-                                case 'weekly':
-                                    nextDate.setDate(nextDate.getDate() + 7);
-                                    break;
-                                case 'monthly':
-                                    nextDate.setMonth(nextDate.getMonth() + 1);
-                                    break;
+                            // Handle recurring tasks - create next instance when checked
+                            if (cb.checked && taskData.recurrence && taskData.recurrence !== 'none') {
+                                const nextDate = new Date(taskData.dueDate || Date.now());
+                                switch(taskData.recurrence) {
+                                    case 'daily':
+                                        nextDate.setDate(nextDate.getDate() + 1);
+                                        break;
+                                    case 'weekly':
+                                        nextDate.setDate(nextDate.getDate() + 7);
+                                        break;
+                                    case 'monthly':
+                                        nextDate.setMonth(nextDate.getMonth() + 1);
+                                        break;
+                                }
+
+                                // Create new recurring task instance
+                                const newId = currentModule.id + '-' + nextDate.getTime();
+                                if (!tasks[newId]) {
+                                    tasks[newId] = {
+                                        completed: false,
+                                        priority: taskData.priority,
+                                        estimate: taskData.estimate,
+                                        recurrence: taskData.recurrence,
+                                        label: taskData.label,
+                                        createdAt: nextDate.getTime(),
+                                        dueDate: nextDate.getTime()
+                                    };
+                                }
                             }
-
-                            // Create new recurring task instance
-                            const newId = currentModule.id + '-' + nextDate.getTime();
-                            if (!tasks[newId]) {
-                                tasks[newId] = {
-                                    completed: false,
-                                    priority: taskData.priority,
-                                    estimate: taskData.estimate,
-                                    recurrence: taskData.recurrence,
-                                    label: taskData.label,
-                                    createdAt: nextDate.getTime(),
-                                    dueDate: nextDate.getTime()
-                                };
-                            }
+                        } else {
+                            tasks[cb.id] = cb.checked;
                         }
-                    } else {
-                        tasks[cb.id] = cb.checked;
                     }
-                }
-            });
+                });
 
-            localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
-            renderDetailView(currentModule);
-            renderDashboard();
-            updateGlobalStats();
-            updateUndoRedoButtons();
+                if (!setStorageData(currentModule.storageKey, tasks)) {
+                    console.error('Failed to save task progress');
+                    return;
+                }
+
+                renderDetailView(currentModule);
+                renderDashboard();
+                updateGlobalStats();
+                updateUndoRedoButtons();
+            } catch(error) {
+                console.error('Error updating module progress:', error);
+            }
         }
 
         function addDetailTask() {
             if (!currentModule) return;
 
-            const input = document.getElementById('detailInput');
-            const priority = document.getElementById('prioritySelect').value;
-            const recurrence = document.getElementById('recurrenceSelect').value;
-            const estimate = parseFloat(document.getElementById('estimateInput').value) || 1;
-            const taskLabel = input.value.trim().toUpperCase();
+            try {
+                const input = document.getElementById('detailInput');
+                const priority = document.getElementById('prioritySelect').value;
+                const recurrence = document.getElementById('recurrenceSelect').value;
+                const estimate = parseFloat(document.getElementById('estimateInput').value) || 1;
+                const taskLabel = input.value.trim().toUpperCase();
 
-            // Form validation
-            if (!taskLabel) {
-                alert('TASK DESCRIPTION REQUIRED');
-                return;
+                // Form validation
+                if (!taskLabel) {
+                    alert('TASK DESCRIPTION REQUIRED');
+                    return;
+                }
+
+                if (taskLabel.length > 100) {
+                    alert('TASK DESCRIPTION TOO LONG (MAX 100 CHARACTERS)');
+                    return;
+                }
+
+                if (estimate < 0 || estimate > 1000) {
+                    alert('TIME ESTIMATE MUST BE BETWEEN 0 AND 1000 HOURS');
+                    return;
+                }
+
+                const tasks = getStorageData(currentModule.storageKey);
+
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Task created: "${taskLabel}"`);
+
+                const id = currentModule.id + '-' + Date.now();
+                tasks[id] = {
+                    completed: false,
+                    priority: priority,
+                    estimate: estimate,
+                    recurrence: recurrence,
+                    label: taskLabel,
+                    createdAt: Date.now(),
+                    dueDate: Date.now()
+                };
+
+                if (!setStorageData(currentModule.storageKey, tasks)) {
+                    alert('FAILED TO CREATE TASK // STORAGE FULL OR UNAVAILABLE');
+                    return;
+                }
+
+                input.value = '';
+                document.getElementById('estimateInput').value = '1';
+                document.getElementById('prioritySelect').value = 'medium';
+                document.getElementById('recurrenceSelect').value = 'none';
+                renderDetailView(currentModule);
+                renderDashboard();
+                updateGlobalStats();
+                updateUndoRedoButtons();
+            } catch(error) {
+                console.error('Error adding task:', error);
+                alert('ERROR CREATING TASK // CHECK CONSOLE FOR DETAILS');
             }
-
-            if (taskLabel.length > 100) {
-                alert('TASK DESCRIPTION TOO LONG (MAX 100 CHARACTERS)');
-                return;
-            }
-
-            if (estimate < 0 || estimate > 1000) {
-                alert('TIME ESTIMATE MUST BE BETWEEN 0 AND 1000 HOURS');
-                return;
-            }
-
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-
-            // Save state for undo/redo before making changes
-            UndoRedoManager.saveState(`Task created: "${taskLabel}"`);
-
-            const id = currentModule.id + '-' + Date.now();
-            tasks[id] = {
-                completed: false,
-                priority: priority,
-                estimate: estimate,
-                recurrence: recurrence,
-                label: taskLabel,
-                createdAt: Date.now(),
-                dueDate: Date.now()
-            };
-
-            localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
-            input.value = '';
-            document.getElementById('estimateInput').value = '1';
-            document.getElementById('prioritySelect').value = 'medium';
-            document.getElementById('recurrenceSelect').value = 'none';
-            renderDetailView(currentModule);
-            renderDashboard();
-            updateGlobalStats();
-            updateUndoRedoButtons();
         }
 
         function updateGlobalStats() {
@@ -2122,92 +2346,109 @@
                 return;
             }
 
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-            const taskLabel = typeof tasks[taskId] === 'object' ? tasks[taskId].label : 'Task';
+            try {
+                const tasks = getStorageData(currentModule.storageKey);
+                const taskLabel = typeof tasks[taskId] === 'object' ? tasks[taskId].label : 'Task';
 
-            // Save state for undo/redo before making changes
-            UndoRedoManager.saveState(`Task deleted: "${taskLabel}"`);
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Task deleted: "${taskLabel}"`);
 
-            delete tasks[taskId];
+                delete tasks[taskId];
 
-            localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
-            renderDetailView(currentModule);
-            renderDashboard();
-            updateGlobalStats();
-            updateUndoRedoButtons();
+                if (!setStorageData(currentModule.storageKey, tasks)) {
+                    console.error('Failed to save task deletion');
+                    return;
+                }
+
+                renderDetailView(currentModule);
+                renderDashboard();
+                updateGlobalStats();
+                updateUndoRedoButtons();
+            } catch(error) {
+                console.error('Error deleting task:', error);
+            }
         }
 
         function editTask(taskId) {
             if (!currentModule) return;
 
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-            const taskData = tasks[taskId];
+            try {
+                const tasks = getStorageData(currentModule.storageKey);
+                const taskData = tasks[taskId];
 
-            if (!taskData || typeof taskData !== 'object') {
-                alert('TASK NOT FOUND OR INVALID FORMAT');
-                return;
+                if (!taskData || typeof taskData !== 'object') {
+                    alert('TASK NOT FOUND OR INVALID FORMAT');
+                    return;
+                }
+
+                const newLabel = prompt('EDIT TASK DESCRIPTION:', taskData.label);
+                if (newLabel === null) return;
+
+                if (!newLabel.trim()) {
+                    alert('TASK DESCRIPTION CANNOT BE EMPTY');
+                    return;
+                }
+
+                if (newLabel.length > 100) {
+                    alert('TASK DESCRIPTION TOO LONG (MAX 100 CHARACTERS)');
+                    return;
+                }
+
+                const priorityOptions = 'Select priority:\n1. HIGH\n2. MEDIUM\n3. LOW\n\nEnter 1, 2, or 3:';
+                const priorityInput = prompt(priorityOptions, '2');
+                if (priorityInput === null) return;
+
+                const priorityMap = { '1': 'high', '2': 'medium', '3': 'low' };
+                const newPriority = priorityMap[priorityInput];
+
+                if (!newPriority) {
+                    alert('INVALID PRIORITY SELECTION');
+                    return;
+                }
+
+                const estimateInput = prompt('EDIT TIME ESTIMATE (hours):', taskData.estimate);
+                if (estimateInput === null) return;
+
+                const newEstimate = parseFloat(estimateInput);
+                if (isNaN(newEstimate) || newEstimate < 0 || newEstimate > 1000) {
+                    alert('TIME ESTIMATE MUST BE BETWEEN 0 AND 1000 HOURS');
+                    return;
+                }
+
+                const recurrenceOptions = 'Select recurrence:\n1. NONE\n2. DAILY\n3. WEEKLY\n4. MONTHLY\n\nEnter 1, 2, 3, or 4:';
+                const recurrenceInput = prompt(recurrenceOptions, '1');
+                if (recurrenceInput === null) return;
+
+                const recurrenceMap = { '1': 'none', '2': 'daily', '3': 'weekly', '4': 'monthly' };
+                const newRecurrence = recurrenceMap[recurrenceInput];
+
+                if (!newRecurrence) {
+                    alert('INVALID RECURRENCE SELECTION');
+                    return;
+                }
+
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Task edited: "${taskData.label}"`);
+
+                taskData.label = newLabel.toUpperCase();
+                taskData.priority = newPriority;
+                taskData.estimate = newEstimate;
+                taskData.recurrence = newRecurrence;
+
+                tasks[taskId] = taskData;
+
+                if (!setStorageData(currentModule.storageKey, tasks)) {
+                    console.error('Failed to save task edits');
+                    return;
+                }
+
+                renderDetailView(currentModule);
+                renderDashboard();
+                updateGlobalStats();
+                updateUndoRedoButtons();
+            } catch(error) {
+                console.error('Error editing task:', error);
             }
-
-            const newLabel = prompt('EDIT TASK DESCRIPTION:', taskData.label);
-            if (newLabel === null) return;
-
-            if (!newLabel.trim()) {
-                alert('TASK DESCRIPTION CANNOT BE EMPTY');
-                return;
-            }
-
-            if (newLabel.length > 100) {
-                alert('TASK DESCRIPTION TOO LONG (MAX 100 CHARACTERS)');
-                return;
-            }
-
-            const priorityOptions = 'Select priority:\n1. HIGH\n2. MEDIUM\n3. LOW\n\nEnter 1, 2, or 3:';
-            const priorityInput = prompt(priorityOptions, '2');
-            if (priorityInput === null) return;
-
-            const priorityMap = { '1': 'high', '2': 'medium', '3': 'low' };
-            const newPriority = priorityMap[priorityInput];
-
-            if (!newPriority) {
-                alert('INVALID PRIORITY SELECTION');
-                return;
-            }
-
-            const estimateInput = prompt('EDIT TIME ESTIMATE (hours):', taskData.estimate);
-            if (estimateInput === null) return;
-
-            const newEstimate = parseFloat(estimateInput);
-            if (isNaN(newEstimate) || newEstimate < 0 || newEstimate > 1000) {
-                alert('TIME ESTIMATE MUST BE BETWEEN 0 AND 1000 HOURS');
-                return;
-            }
-
-            const recurrenceOptions = 'Select recurrence:\n1. NONE\n2. DAILY\n3. WEEKLY\n4. MONTHLY\n\nEnter 1, 2, 3, or 4:';
-            const recurrenceInput = prompt(recurrenceOptions, '1');
-            if (recurrenceInput === null) return;
-
-            const recurrenceMap = { '1': 'none', '2': 'daily', '3': 'weekly', '4': 'monthly' };
-            const newRecurrence = recurrenceMap[recurrenceInput];
-
-            if (!newRecurrence) {
-                alert('INVALID RECURRENCE SELECTION');
-                return;
-            }
-
-            // Save state for undo/redo before making changes
-            UndoRedoManager.saveState(`Task edited: "${taskData.label}"`);
-
-            taskData.label = newLabel.toUpperCase();
-            taskData.priority = newPriority;
-            taskData.estimate = newEstimate;
-            taskData.recurrence = newRecurrence;
-
-            tasks[taskId] = taskData;
-            localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
-            renderDetailView(currentModule);
-            renderDashboard();
-            updateGlobalStats();
-            updateUndoRedoButtons();
         }
 
         function exportModuleMarkdown() {
@@ -2683,92 +2924,126 @@
         }
 
         function addSubtask() {
-            const input = document.getElementById('subtaskInput');
-            const label = input.value.trim();
+            try {
+                const input = document.getElementById('subtaskInput');
+                const label = input.value.trim();
 
-            if (!label) {
-                alert('SUBTASK DESCRIPTION REQUIRED');
-                return;
+                if (!label) {
+                    alert('SUBTASK DESCRIPTION REQUIRED');
+                    return;
+                }
+
+                if (label.length > 100) {
+                    alert('SUBTASK TOO LONG (MAX 100 CHARACTERS)');
+                    return;
+                }
+
+                const tasks = getStorageData(currentModule.storageKey);
+                const taskData = tasks[currentEditingTaskId];
+
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Subtask added: "${label}"`);
+
+                if (!taskData.subtasks) {
+                    taskData.subtasks = [];
+                }
+
+                taskData.subtasks.push({
+                    label: label.toUpperCase(),
+                    completed: false
+                });
+
+                tasks[currentEditingTaskId] = taskData;
+
+                if (!setStorageData(currentModule.storageKey, tasks)) {
+                    console.error('Failed to save subtask');
+                    return;
+                }
+
+                input.value = '';
+                updateUndoRedoButtons();
+                openNotesModal(currentEditingTaskId);
+            } catch(error) {
+                console.error('Error adding subtask:', error);
             }
-
-            if (label.length > 100) {
-                alert('SUBTASK TOO LONG (MAX 100 CHARACTERS)');
-                return;
-            }
-
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-            const taskData = tasks[currentEditingTaskId];
-
-            // Save state for undo/redo before making changes
-            UndoRedoManager.saveState(`Subtask added: "${label}"`);
-
-            if (!taskData.subtasks) {
-                taskData.subtasks = [];
-            }
-
-            taskData.subtasks.push({
-                label: label.toUpperCase(),
-                completed: false
-            });
-
-            tasks[currentEditingTaskId] = taskData;
-            localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
-
-            input.value = '';
-            updateUndoRedoButtons();
-            openNotesModal(currentEditingTaskId);
         }
 
         function deleteSubtask(index) {
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-            const taskData = tasks[currentEditingTaskId];
+            try {
+                const tasks = getStorageData(currentModule.storageKey);
+                const taskData = tasks[currentEditingTaskId];
 
-            if (taskData.subtasks) {
-                // Save state for undo/redo before making changes
-                UndoRedoManager.saveState(`Subtask deleted`);
+                if (taskData.subtasks) {
+                    // Save state for undo/redo before making changes
+                    UndoRedoManager.saveState(`Subtask deleted`);
 
-                taskData.subtasks.splice(index, 1);
-                tasks[currentEditingTaskId] = taskData;
-                localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
-                updateUndoRedoButtons();
-                openNotesModal(currentEditingTaskId);
+                    taskData.subtasks.splice(index, 1);
+                    tasks[currentEditingTaskId] = taskData;
+
+                    if (!setStorageData(currentModule.storageKey, tasks)) {
+                        console.error('Failed to save subtask deletion');
+                        return;
+                    }
+
+                    updateUndoRedoButtons();
+                    openNotesModal(currentEditingTaskId);
+                }
+            } catch(error) {
+                console.error('Error deleting subtask:', error);
             }
         }
 
         function toggleSubtask(index) {
-            const checkbox = document.getElementById(`st-${index}`);
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-            const taskData = tasks[currentEditingTaskId];
+            try {
+                const checkbox = document.getElementById(`st-${index}`);
+                const tasks = getStorageData(currentModule.storageKey);
+                const taskData = tasks[currentEditingTaskId];
 
-            if (taskData.subtasks && taskData.subtasks[index]) {
-                // Save state for undo/redo before making changes
-                UndoRedoManager.saveState(`Subtask toggled`);
+                if (taskData.subtasks && taskData.subtasks[index]) {
+                    // Save state for undo/redo before making changes
+                    UndoRedoManager.saveState(`Subtask toggled`);
 
-                taskData.subtasks[index].completed = checkbox.checked;
-                tasks[currentEditingTaskId] = taskData;
-                localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
-                updateUndoRedoButtons();
+                    taskData.subtasks[index].completed = checkbox.checked;
+                    tasks[currentEditingTaskId] = taskData;
+
+                    if (!setStorageData(currentModule.storageKey, tasks)) {
+                        console.error('Failed to save subtask toggle');
+                        return;
+                    }
+
+                    updateUndoRedoButtons();
+                }
+            } catch(error) {
+                console.error('Error toggling subtask:', error);
             }
         }
 
         function saveTaskDetails() {
             if (!currentEditingTaskId) return;
 
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-            const taskData = tasks[currentEditingTaskId];
+            try {
+                const tasks = getStorageData(currentModule.storageKey);
+                const taskData = tasks[currentEditingTaskId];
 
-            if (taskData && typeof taskData === 'object') {
-                // Save state for undo/redo before making changes
-                UndoRedoManager.saveState(`Task notes updated`);
+                if (taskData && typeof taskData === 'object') {
+                    // Save state for undo/redo before making changes
+                    UndoRedoManager.saveState(`Task notes updated`);
 
-                taskData.notes = document.getElementById('notesText').value;
-                tasks[currentEditingTaskId] = taskData;
-                localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
+                    taskData.notes = document.getElementById('notesText').value;
+                    tasks[currentEditingTaskId] = taskData;
 
-                closeNotesModal();
-                renderDetailView(currentModule);
-                updateGlobalStats();
-                updateUndoRedoButtons();
+                    if (!setStorageData(currentModule.storageKey, tasks)) {
+                        console.error('Failed to save task details');
+                        return;
+                    }
+
+                    closeNotesModal();
+                    renderDetailView(currentModule);
+                    updateGlobalStats();
+                    updateUndoRedoButtons();
+                }
+            } catch(error) {
+                console.error('Error saving task details:', error);
             }
         }
 

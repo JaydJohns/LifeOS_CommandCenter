@@ -1305,6 +1305,8 @@
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openHeatmapModal()" aria-label="View 90-day activity heatmap showing task completion intensity" aria-expanded="false" id="heatmapBtn">📈 HEATMAP</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openAnalyticsModal()" aria-label="View performance analytics with 30-day metrics and trends" aria-expanded="false" id="analyticsBtn">📉 ANALYTICS</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openSyncModal()" aria-label="Sync center for data export, import, and GitHub integration" aria-expanded="false" id="syncBtn">⚙️ SYNC</button>
+                <button style="margin-left: 20px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease; opacity: 0.5;" onmouseover="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)' }" onmouseout="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none' }" onclick="undoAction()" aria-label="Undo last action (Cmd+Z)" id="undoBtn" disabled>↶ UNDO</button>
+                <button style="margin-left: 8px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease; opacity: 0.5;" onmouseover="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)' }" onmouseout="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none' }" onclick="redoAction()" aria-label="Redo last undone action (Cmd+Shift+Z)" id="redoBtn" disabled>↷ REDO</button>
             </div>
         </header>
 
@@ -1639,6 +1641,87 @@
             { id: 'health', name: 'Health', icon: '💪', description: 'Personal wellness and fitness', storageKey: 'health-domain', defaultTasks: [] }
         ];
 
+        // Undo/Redo State Manager
+        const UndoRedoManager = (() => {
+            let undoStack = [];
+            let redoStack = [];
+            const MAX_HISTORY = 50; // Limit history to 50 states
+
+            return {
+                saveState: function(description = 'Action') {
+                    // Capture current state of all modules
+                    const state = {};
+                    modules.forEach(m => {
+                        state[m.storageKey] = JSON.parse(localStorage.getItem(m.storageKey) || '{}');
+                    });
+
+                    undoStack.push({ state, description });
+                    redoStack = []; // Clear redo stack when new action is taken
+
+                    // Limit history size
+                    if (undoStack.length > MAX_HISTORY) {
+                        undoStack = undoStack.slice(undoStack.length - MAX_HISTORY);
+                    }
+
+                    updateUndoRedoButtons();
+                },
+
+                undo: function() {
+                    if (undoStack.length === 0) return false;
+
+                    // Save current state to redo stack
+                    const currentState = {};
+                    modules.forEach(m => {
+                        currentState[m.storageKey] = JSON.parse(localStorage.getItem(m.storageKey) || '{}');
+                    });
+                    redoStack.push(currentState);
+
+                    // Restore previous state
+                    const previousState = undoStack.pop();
+                    Object.entries(previousState.state).forEach(([key, data]) => {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    });
+
+                    updateUndoRedoButtons();
+                    return true;
+                },
+
+                redo: function() {
+                    if (redoStack.length === 0) return false;
+
+                    // Save current state to undo stack
+                    const currentState = {};
+                    modules.forEach(m => {
+                        currentState[m.storageKey] = JSON.parse(localStorage.getItem(m.storageKey) || '{}');
+                    });
+                    undoStack.push({ state: currentState });
+
+                    // Restore redo state
+                    const stateToRestore = redoStack.pop();
+                    Object.entries(stateToRestore).forEach(([key, data]) => {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    });
+
+                    updateUndoRedoButtons();
+                    return true;
+                },
+
+                canUndo: function() {
+                    return undoStack.length > 0;
+                },
+
+                canRedo: function() {
+                    return redoStack.length > 0;
+                },
+
+                clear: function() {
+                    undoStack = [];
+                    redoStack = [];
+                    updateUndoRedoButtons();
+                }
+            };
+        })();
+
         let currentModule = null;
         let currentFilter = 'all';
 
@@ -1859,6 +1942,9 @@
 
             const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
 
+            // Save state for undo/redo before making changes
+            UndoRedoManager.saveState(`Task ${changedTaskId ? 'completed' : 'updated'}`);
+
             document.querySelectorAll('#detailChecklist input[type="checkbox"]').forEach(cb => {
                 if (tasks[cb.id]) {
                     const taskData = tasks[cb.id];
@@ -1904,6 +1990,7 @@
             renderDetailView(currentModule);
             renderDashboard();
             updateGlobalStats();
+            updateUndoRedoButtons();
         }
 
         function addDetailTask() {
@@ -1932,6 +2019,10 @@
             }
 
             const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
+
+            // Save state for undo/redo before making changes
+            UndoRedoManager.saveState(`Task created: "${taskLabel}"`);
+
             const id = currentModule.id + '-' + Date.now();
             tasks[id] = {
                 completed: false,
@@ -1951,6 +2042,7 @@
             renderDetailView(currentModule);
             renderDashboard();
             updateGlobalStats();
+            updateUndoRedoButtons();
         }
 
         function updateGlobalStats() {
@@ -2026,17 +2118,23 @@
         function deleteTask(taskId) {
             if (!currentModule) return;
 
-            if (!confirm('DELETE THIS TASK? THIS ACTION CANNOT BE UNDONE.')) {
+            if (!confirm('DELETE THIS TASK?')) {
                 return;
             }
 
             const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
+            const taskLabel = typeof tasks[taskId] === 'object' ? tasks[taskId].label : 'Task';
+
+            // Save state for undo/redo before making changes
+            UndoRedoManager.saveState(`Task deleted: "${taskLabel}"`);
+
             delete tasks[taskId];
 
             localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
             renderDetailView(currentModule);
             renderDashboard();
             updateGlobalStats();
+            updateUndoRedoButtons();
         }
 
         function editTask(taskId) {
@@ -2096,6 +2194,9 @@
                 return;
             }
 
+            // Save state for undo/redo before making changes
+            UndoRedoManager.saveState(`Task edited: "${taskData.label}"`);
+
             taskData.label = newLabel.toUpperCase();
             taskData.priority = newPriority;
             taskData.estimate = newEstimate;
@@ -2106,6 +2207,7 @@
             renderDetailView(currentModule);
             renderDashboard();
             updateGlobalStats();
+            updateUndoRedoButtons();
         }
 
         function exportModuleMarkdown() {
@@ -2597,6 +2699,9 @@
             const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
             const taskData = tasks[currentEditingTaskId];
 
+            // Save state for undo/redo before making changes
+            UndoRedoManager.saveState(`Subtask added: "${label}"`);
+
             if (!taskData.subtasks) {
                 taskData.subtasks = [];
             }
@@ -2610,6 +2715,7 @@
             localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
 
             input.value = '';
+            updateUndoRedoButtons();
             openNotesModal(currentEditingTaskId);
         }
 
@@ -2618,9 +2724,13 @@
             const taskData = tasks[currentEditingTaskId];
 
             if (taskData.subtasks) {
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Subtask deleted`);
+
                 taskData.subtasks.splice(index, 1);
                 tasks[currentEditingTaskId] = taskData;
                 localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
+                updateUndoRedoButtons();
                 openNotesModal(currentEditingTaskId);
             }
         }
@@ -2631,9 +2741,13 @@
             const taskData = tasks[currentEditingTaskId];
 
             if (taskData.subtasks && taskData.subtasks[index]) {
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Subtask toggled`);
+
                 taskData.subtasks[index].completed = checkbox.checked;
                 tasks[currentEditingTaskId] = taskData;
                 localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
+                updateUndoRedoButtons();
             }
         }
 
@@ -2644,6 +2758,9 @@
             const taskData = tasks[currentEditingTaskId];
 
             if (taskData && typeof taskData === 'object') {
+                // Save state for undo/redo before making changes
+                UndoRedoManager.saveState(`Task notes updated`);
+
                 taskData.notes = document.getElementById('notesText').value;
                 tasks[currentEditingTaskId] = taskData;
                 localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
@@ -2651,6 +2768,7 @@
                 closeNotesModal();
                 renderDetailView(currentModule);
                 updateGlobalStats();
+                updateUndoRedoButtons();
             }
         }
 
@@ -3300,6 +3418,52 @@
             return labels;
         }
 
+        // Undo/Redo Control Functions
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+
+            if (UndoRedoManager.canUndo()) {
+                undoBtn.disabled = false;
+                undoBtn.style.opacity = '1';
+            } else {
+                undoBtn.disabled = true;
+                undoBtn.style.opacity = '0.5';
+            }
+
+            if (UndoRedoManager.canRedo()) {
+                redoBtn.disabled = false;
+                redoBtn.style.opacity = '1';
+            } else {
+                redoBtn.disabled = true;
+                redoBtn.style.opacity = '0.5';
+            }
+        }
+
+        function undoAction() {
+            if (UndoRedoManager.undo()) {
+                // Refresh the current view
+                if (currentModule) {
+                    renderDetailView(currentModule);
+                } else {
+                    renderDashboard();
+                }
+                updateGlobalStats();
+            }
+        }
+
+        function redoAction() {
+            if (UndoRedoManager.redo()) {
+                // Refresh the current view
+                if (currentModule) {
+                    renderDetailView(currentModule);
+                } else {
+                    renderDashboard();
+                }
+                updateGlobalStats();
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             // Load saved theme preference
@@ -3319,6 +3483,25 @@
             modules.forEach(m => initializeDefaultTasks(m));
             renderDashboard();
             updateGlobalStats();
+
+            // Add keyboard shortcuts for undo/redo
+            document.addEventListener('keydown', (e) => {
+                // Cmd+Z or Ctrl+Z for undo
+                if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    undoAction();
+                }
+                // Cmd+Shift+Z or Ctrl+Shift+Z for redo
+                else if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
+                    e.preventDefault();
+                    redoAction();
+                }
+                // Also support Cmd+Y or Ctrl+Y for redo (common in some apps)
+                else if ((e.metaKey || e.ctrlKey) && e.key === 'y') {
+                    e.preventDefault();
+                    redoAction();
+                }
+            });
         });
     </script>
 </body>

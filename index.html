@@ -1119,6 +1119,14 @@
                                     <option value="high">PRIORITY: HIGH</option>
                                     <option value="low">PRIORITY: LOW</option>
                                 </select>
+                                <select id="recurrenceSelect" class="select-field">
+                                    <option value="none">RECURRING: NONE</option>
+                                    <option value="daily">RECURRING: DAILY</option>
+                                    <option value="weekly">RECURRING: WEEKLY</option>
+                                    <option value="monthly">RECURRING: MONTHLY</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
                                 <input type="number" id="estimateInput" class="input-field" placeholder="TIME ESTIMATE (hours)" min="0" max="1000" step="0.5" value="1">
                             </div>
                             <button class="btn" onclick="addDetailTask()">EXECUTE TASK</button>
@@ -1330,16 +1338,25 @@
                         const priority = typeof taskData === 'object' ? taskData.priority : 'medium';
                         const estimate = typeof taskData === 'object' ? taskData.estimate : 0;
                         const label = typeof taskData === 'object' ? taskData.label : 'Task';
+                        const recurrence = typeof taskData === 'object' ? taskData.recurrence : 'none';
+
+                        const recurrenceEmoji = {
+                            'daily': '📅',
+                            'weekly': '📆',
+                            'monthly': '📊',
+                            'none': ''
+                        }[recurrence] || '';
 
                         const item = document.createElement('div');
                         item.className = 'check-item';
                         item.innerHTML = `
-                            <input type="checkbox" id="${id}" ${isCompleted ? 'checked' : ''} onchange="updateModuleProgress()">
+                            <input type="checkbox" id="${id}" ${isCompleted ? 'checked' : ''} onchange="updateModuleProgress('${id}')">
                             <div style="flex: 1;">
                                 <label for="${id}">${label}</label>
                                 <div class="task-meta">
                                     <span class="meta-item"><span class="priority-indicator priority-${priority}"></span>${priority.toUpperCase()}</span>
                                     <span class="meta-item">⏱️ ${estimate}h</span>
+                                    ${recurrence !== 'none' ? `<span class="meta-item">${recurrenceEmoji} ${recurrence.toUpperCase()}</span>` : ''}
                                 </div>
                             </div>
                             <div class="task-actions">
@@ -1373,14 +1390,46 @@
             renderDetailView(currentModule);
         }
 
-        function updateModuleProgress() {
+        function updateModuleProgress(changedTaskId) {
             if (!currentModule) return;
 
             const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
+
             document.querySelectorAll('#detailChecklist input[type="checkbox"]').forEach(cb => {
                 if (tasks[cb.id]) {
-                    if (typeof tasks[cb.id] === 'object') {
-                        tasks[cb.id].completed = cb.checked;
+                    const taskData = tasks[cb.id];
+                    if (typeof taskData === 'object') {
+                        taskData.completed = cb.checked;
+
+                        // Handle recurring tasks - create next instance when checked
+                        if (cb.checked && taskData.recurrence && taskData.recurrence !== 'none') {
+                            const nextDate = new Date(taskData.dueDate || Date.now());
+                            switch(taskData.recurrence) {
+                                case 'daily':
+                                    nextDate.setDate(nextDate.getDate() + 1);
+                                    break;
+                                case 'weekly':
+                                    nextDate.setDate(nextDate.getDate() + 7);
+                                    break;
+                                case 'monthly':
+                                    nextDate.setMonth(nextDate.getMonth() + 1);
+                                    break;
+                            }
+
+                            // Create new recurring task instance
+                            const newId = currentModule.id + '-' + nextDate.getTime();
+                            if (!tasks[newId]) {
+                                tasks[newId] = {
+                                    completed: false,
+                                    priority: taskData.priority,
+                                    estimate: taskData.estimate,
+                                    recurrence: taskData.recurrence,
+                                    label: taskData.label,
+                                    createdAt: nextDate.getTime(),
+                                    dueDate: nextDate.getTime()
+                                };
+                            }
+                        }
                     } else {
                         tasks[cb.id] = cb.checked;
                     }
@@ -1398,6 +1447,7 @@
 
             const input = document.getElementById('detailInput');
             const priority = document.getElementById('prioritySelect').value;
+            const recurrence = document.getElementById('recurrenceSelect').value;
             const estimate = parseFloat(document.getElementById('estimateInput').value) || 1;
             const taskLabel = input.value.trim().toUpperCase();
 
@@ -1423,14 +1473,17 @@
                 completed: false,
                 priority: priority,
                 estimate: estimate,
+                recurrence: recurrence,
                 label: taskLabel,
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                dueDate: Date.now()
             };
 
             localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));
             input.value = '';
             document.getElementById('estimateInput').value = '1';
             document.getElementById('prioritySelect').value = 'medium';
+            document.getElementById('recurrenceSelect').value = 'none';
             renderDetailView(currentModule);
             renderDashboard();
             updateGlobalStats();
@@ -1567,9 +1620,22 @@
                 return;
             }
 
+            const recurrenceOptions = 'Select recurrence:\n1. NONE\n2. DAILY\n3. WEEKLY\n4. MONTHLY\n\nEnter 1, 2, 3, or 4:';
+            const recurrenceInput = prompt(recurrenceOptions, '1');
+            if (recurrenceInput === null) return;
+
+            const recurrenceMap = { '1': 'none', '2': 'daily', '3': 'weekly', '4': 'monthly' };
+            const newRecurrence = recurrenceMap[recurrenceInput];
+
+            if (!newRecurrence) {
+                alert('INVALID RECURRENCE SELECTION');
+                return;
+            }
+
             taskData.label = newLabel.toUpperCase();
             taskData.priority = newPriority;
             taskData.estimate = newEstimate;
+            taskData.recurrence = newRecurrence;
 
             tasks[taskId] = taskData;
             localStorage.setItem(currentModule.storageKey, JSON.stringify(tasks));

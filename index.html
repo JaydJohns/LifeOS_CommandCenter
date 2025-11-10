@@ -1178,6 +1178,7 @@
                     <span>NEURAL SYNC OK</span>
                 </div>
                 <button style="margin-left: 30px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="generateWeeklyDigest()">📊 WEEKLY DIGEST</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="sendTaskNotifications()" id="notificationBtn">🔔 NOTIFY</button>
             </div>
         </header>
 
@@ -1910,6 +1911,148 @@
         let currentDigestContent = '';
         let currentEditingTaskId = null;
 
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('Notifications not supported');
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                return;
+            }
+
+            if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification('Life OS Notifications', {
+                            body: 'Notifications enabled! You will receive task alerts.',
+                            icon: '⚡'
+                        });
+                    }
+                });
+            }
+        }
+
+        function sendTaskNotifications() {
+            if (!('Notification' in window)) {
+                alert('YOUR BROWSER DOES NOT SUPPORT NOTIFICATIONS');
+                return;
+            }
+
+            if (Notification.permission === 'denied') {
+                alert('NOTIFICATIONS ARE BLOCKED. PLEASE ENABLE THEM IN YOUR BROWSER SETTINGS.');
+                return;
+            }
+
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        sendTaskNotifications();
+                    }
+                });
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let highPriorityTasks = [];
+            let dueTodayTasks = [];
+            let overdueTasks = [];
+            let completionStats = { total: 0, completed: 0 };
+
+            modules.forEach(module => {
+                const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
+                const taskIds = Object.keys(tasks);
+
+                taskIds.forEach(id => {
+                    const taskData = tasks[id];
+                    if (typeof taskData === 'object') {
+                        completionStats.total++;
+                        if (taskData.completed) {
+                            completionStats.completed++;
+                        }
+
+                        if (!taskData.completed) {
+                            const taskDate = new Date(taskData.createdAt || 0);
+                            taskDate.setHours(0, 0, 0, 0);
+
+                            if (taskData.priority === 'high') {
+                                highPriorityTasks.push({
+                                    label: taskData.label,
+                                    module: module.name,
+                                    priority: 'HIGH'
+                                });
+                            }
+
+                            if (taskDate.getTime() === today.getTime()) {
+                                dueTodayTasks.push({
+                                    label: taskData.label,
+                                    module: module.name,
+                                    priority: taskData.priority
+                                });
+                            }
+
+                            if (taskDate < today) {
+                                overdueTasks.push({
+                                    label: taskData.label,
+                                    module: module.name,
+                                    priority: taskData.priority,
+                                    daysOverdue: Math.floor((today - taskDate) / (1000 * 60 * 60 * 24))
+                                });
+                            }
+                        }
+                    }
+                });
+            });
+
+            let notificationSent = false;
+
+            if (highPriorityTasks.length > 0) {
+                const count = highPriorityTasks.length;
+                new Notification('🔴 HIGH PRIORITY TASKS', {
+                    body: `You have ${count} high priority task${count !== 1 ? 's' : ''} pending attention.`,
+                    tag: 'high-priority',
+                    requireInteraction: true
+                });
+                notificationSent = true;
+            }
+
+            if (overdueTasks.length > 0) {
+                const count = overdueTasks.length;
+                new Notification('⚠️ OVERDUE TASKS', {
+                    body: `You have ${count} overdue task${count !== 1 ? 's' : ''}. Time to catch up!`,
+                    tag: 'overdue',
+                    requireInteraction: true
+                });
+                notificationSent = true;
+            }
+
+            if (dueTodayTasks.length > 0) {
+                const count = dueTodayTasks.length;
+                new Notification('📅 TODAY\'S TASKS', {
+                    body: `You have ${count} task${count !== 1 ? 's' : ''} to complete today.`,
+                    tag: 'today'
+                });
+                notificationSent = true;
+            }
+
+            if (completionStats.total > 0) {
+                const completionRate = Math.round((completionStats.completed / completionStats.total) * 100);
+                new Notification('📊 COMPLETION STATUS', {
+                    body: `Overall completion: ${completionStats.completed}/${completionStats.total} (${completionRate}%)`,
+                    tag: 'status'
+                });
+                notificationSent = true;
+            }
+
+            if (!notificationSent) {
+                new Notification('✅ ALL CAUGHT UP!', {
+                    body: 'You have no pending or overdue tasks. Great job!'
+                });
+            }
+        }
+
         function generateWeeklyDigest() {
             const today = new Date();
             const weekStart = new Date(today);
@@ -2248,6 +2391,9 @@
                 document.body.classList.add('light-theme');
                 document.querySelector('.theme-toggle').textContent = '🌙 DARK';
             }
+
+            // Request notification permission
+            requestNotificationPermission();
 
             modules.forEach(m => initializeDefaultTasks(m));
             renderDashboard();

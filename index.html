@@ -579,6 +579,125 @@
             width: 100%;
         }
 
+        /* Export Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-darker);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--accent);
+        }
+
+        .export-textarea {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 99, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            resize: none;
+            overflow-y: auto;
+        }
+
+        .export-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .modal-btn.download {
+            background: rgba(0, 255, 136, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .modal-btn.download:hover {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: var(--success);
+        }
+
         .add-task-section {
             margin-top: 24px;
             padding-top: 24px;
@@ -986,6 +1105,7 @@
                         <button class="filter-btn" onclick="setFilter('today')">TODAY</button>
                         <button class="filter-btn" onclick="setFilter('week')">THIS WEEK</button>
                         <button class="filter-btn" onclick="setFilter('high')">HIGH PRIORITY</button>
+                        <button class="filter-btn" onclick="exportModuleMarkdown()">📥 EXPORT MD</button>
                     </div>
 
                     <div id="detailChecklist" class="checklist"></div>
@@ -1004,6 +1124,21 @@
                             <button class="btn" onclick="addDetailTask()">EXECUTE TASK</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Modal -->
+        <div id="exportModal" class="modal" onclick="if(event.target === this) closeExportModal()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">📥 EXPORT MARKDOWN</div>
+                    <button class="modal-close" onclick="closeExportModal()">✕</button>
+                </div>
+                <textarea id="exportTextarea" class="export-textarea" readonly></textarea>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="copyExportToClipboard()">📋 COPY</button>
+                    <button class="modal-btn download" onclick="downloadExportFile()">⬇️ DOWNLOAD</button>
                 </div>
             </div>
         </div>
@@ -1441,6 +1576,90 @@
             renderDetailView(currentModule);
             renderDashboard();
             updateGlobalStats();
+        }
+
+        function exportModuleMarkdown() {
+            if (!currentModule) return;
+
+            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
+            const taskIds = Object.keys(tasks);
+
+            if (taskIds.length === 0) {
+                alert('NO TASKS TO EXPORT IN THIS MODULE');
+                return;
+            }
+
+            let markdown = `# ${currentModule.name}\n\n`;
+            markdown += `**Module:** ${currentModule.name}\n`;
+            markdown += `**Exported:** ${new Date().toLocaleString()}\n`;
+            markdown += `**Total Tasks:** ${taskIds.length}\n\n`;
+
+            const completed = taskIds.filter(id => {
+                const task = tasks[id];
+                return typeof task === 'object' ? task.completed : task;
+            }).length;
+            markdown += `**Completed:** ${completed}/${taskIds.length}\n\n`;
+
+            markdown += '---\n\n';
+            markdown += '## Tasks\n\n';
+
+            taskIds.forEach((id, index) => {
+                const taskData = tasks[id];
+                const isCompleted = typeof taskData === 'object' ? taskData.completed : taskData;
+                const priority = typeof taskData === 'object' ? taskData.priority : 'medium';
+                const estimate = typeof taskData === 'object' ? taskData.estimate : 0;
+                const label = typeof taskData === 'object' ? taskData.label : 'Task';
+
+                const checkbox = isCompleted ? '[x]' : '[ ]';
+                const priorityEmoji = priority === 'high' ? '🔴' : priority === 'low' ? '🟢' : '🟠';
+                const completionClass = isCompleted ? '~~' : '';
+
+                markdown += `${index + 1}. ${checkbox} ${priorityEmoji} ${completionClass}${label}${completionClass}\n`;
+                markdown += `   - **Priority:** ${priority.toUpperCase()} ${priorityEmoji}\n`;
+                markdown += `   - **Estimate:** ${estimate} hours\n`;
+                markdown += `   - **Status:** ${isCompleted ? 'COMPLETED ✅' : 'PENDING ⏳'}\n\n`;
+            });
+
+            markdown += '---\n\n';
+            markdown += `*Generated by Life OS Command Center*\n`;
+            markdown += `*https://jaydjohns.github.io/LifeOS_CommandCenter/*\n`;
+
+            // Show modal with export content
+            document.getElementById('exportTextarea').value = markdown;
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function copyExportToClipboard() {
+            const textarea = document.getElementById('exportTextarea');
+            textarea.select();
+            document.execCommand('copy');
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ COPIED';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+
+        function downloadExportFile() {
+            const textarea = document.getElementById('exportTextarea');
+            const content = textarea.value;
+            const filename = `${currentModule.id}-tasks-${new Date().toISOString().split('T')[0]}.md`;
+
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function toggleTheme() {

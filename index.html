@@ -42,6 +42,40 @@
             --glow-accent: 0 0 20px rgba(204, 0, 102, 0.15);
         }
 
+        /* Light Theme - Sidebar Tabs */
+        body.light-theme .sidebar-tab-btn {
+            color: var(--text-secondary);
+            border-bottom-color: transparent;
+        }
+
+        body.light-theme .sidebar-tab-btn:hover {
+            background: rgba(0, 102, 204, 0.08);
+            color: var(--primary);
+        }
+
+        body.light-theme .sidebar-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: rgba(0, 102, 204, 0.12);
+        }
+
+        /* Light Theme - Left Sidebar */
+        body.light-theme #leftSidebar {
+            background: rgba(0, 102, 204, 0.05);
+            border-color: rgba(0, 102, 204, 0.2);
+        }
+
+        /* Light Theme - Module List Item */
+        body.light-theme .module-list-item {
+            background: rgba(0, 102, 204, 0.1) !important;
+            border-color: rgba(0, 102, 204, 0.2) !important;
+        }
+
+        body.light-theme .module-list-item:hover {
+            background: rgba(0, 102, 204, 0.2) !important;
+            border-color: rgba(0, 102, 204, 0.3) !important;
+        }
+
         body.light-theme body::before {
             opacity: 0.1;
         }
@@ -1529,6 +1563,7 @@
 
         /* Tag System Styles */
         .tag-sidebar {
+            display: none !important;
             box-shadow: var(--glow-primary);
         }
 
@@ -1547,6 +1582,51 @@
 
         .tag-sidebar::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 212, 255, 0.5);
+        }
+
+        /* Left Sidebar Tab Navigation */
+        .sidebar-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            margin-bottom: 15px;
+            padding-bottom: 0;
+        }
+
+        .sidebar-tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 12px 16px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar-tab-btn:hover {
+            color: var(--primary);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .sidebar-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .sidebar-panel {
+            display: none;
+        }
+
+        .sidebar-panel.active {
+            display: block;
         }
 
         .tag-suggestions {
@@ -1698,6 +1778,91 @@
             margin: 12px 0;
             font-size: 0.9rem;
         }
+
+        /* Hide right sidebar toggle buttons */
+        #showTagSidebarBtn {
+            display: none !important;
+        }
+
+        /* Responsive Design for Mobile */
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr !important;
+            }
+
+            #leftSidebar {
+                position: sticky;
+                top: 60px;
+                max-height: calc(100vh - 120px);
+            }
+
+            .sidebar-tabs {
+                display: flex;
+                gap: 0;
+                border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            }
+
+            .sidebar-tab-btn {
+                flex: 1;
+                padding: 10px 12px;
+                font-size: 0.7rem;
+            }
+
+            #modulesPanel,
+            #tagsPanel {
+                font-size: 0.75rem;
+            }
+
+            .module-list-item {
+                padding: 8px 10px !important;
+            }
+
+            .overview-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            header {
+                margin-bottom: 30px;
+            }
+
+            .status-line {
+                flex-wrap: wrap;
+                gap: 10px;
+                font-size: 0.7rem;
+            }
+
+            .section-divider {
+                margin: 30px 0 20px 0;
+                font-size: 1rem;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar-tab-btn {
+                padding: 8px 10px;
+                font-size: 0.65rem;
+                letter-spacing: 0;
+            }
+
+            .module-list-item {
+                padding: 6px 8px !important;
+            }
+
+            #leftSidebar {
+                width: 100% !important;
+                max-height: 200px;
+            }
+
+            .status-line {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            button.sidebar-tab-btn:active {
+                background: rgba(0, 212, 255, 0.1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1730,20 +1895,69 @@
             </div>
         </header>
 
-        <!-- Dashboard Overview View -->
-        <div id="overviewView" class="view-container">
-            <div class="section-divider">📊 Command Center</div>
+        <!-- Main Layout with Left Sidebar -->
+        <div class="main-layout" style="display: grid; grid-template-columns: 250px 1fr; gap: 20px; align-items: start;">
+            <!-- Left Sidebar -->
+            <div id="leftSidebar" style="
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(0, 212, 255, 0.2);
+                border-radius: 8px;
+                padding: 0;
+                position: sticky;
+                top: 100px;
+                height: fit-content;
+                max-height: calc(100vh - 200px);
+                overflow-y: auto;
+            ">
+                <!-- Tab Navigation -->
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab-btn active" id="modulesTab" onclick="switchSidebarTab('modules')">MODULES</button>
+                    <button class="sidebar-tab-btn" id="tagsTab" onclick="switchSidebarTab('tags')">TAGS</button>
+                </div>
 
-            <!-- Global Stats Dashboard -->
-            <div class="global-stats" id="globalStats" style="display: none;">
-                <div class="section-divider" style="margin: 40px 0 20px 0; font-size: 1rem;">⚡ Global Statistics</div>
-                <div class="global-stats-grid" id="globalStatsGrid">
-                    <!-- Stats will be populated by JavaScript -->
+                <!-- Modules Panel -->
+                <div id="modulesPanel" class="sidebar-panel active" style="padding: 15px; display: block;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6;">
+                        <p style="text-align: center; margin: 20px 0; color: var(--text-secondary);">
+                            Click a domain to view tasks<br>
+                            <span style="font-size: 0.7rem; opacity: 0.7;">(Module details below)</span>
+                        </p>
+                    </div>
+                    <div id="modulesList" style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- Modules list will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Tags Panel -->
+                <div id="tagsPanel" class="sidebar-panel" style="padding: 15px; overflow-y: auto; max-height: calc(100vh - 300px);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(0, 212, 255, 0.2); padding-bottom: 10px;">
+                        <span style="color: var(--primary); font-weight: 600; font-size: 0.85rem;">MANAGE</span>
+                        <button onclick="openTagManagementModal()" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.9rem; opacity: 0.7; transition: opacity 0.2s;" title="Manage Tags">⚙️</button>
+                    </div>
+                    <div id="tagsList" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Tags will render here -->
+                    </div>
                 </div>
             </div>
 
-            <div class="overview-grid" id="moduleGrid">
-                <!-- Modules will be populated by JavaScript -->
+            <!-- Main Content Area -->
+            <div style="flex: 1;">
+                <!-- Dashboard Overview View -->
+                <div id="overviewView" class="view-container">
+                    <div class="section-divider">📊 Command Center</div>
+
+                    <!-- Global Stats Dashboard -->
+                    <div class="global-stats" id="globalStats" style="display: none;">
+                        <div class="section-divider" style="margin: 40px 0 20px 0; font-size: 1rem;">⚡ Global Statistics</div>
+                        <div class="global-stats-grid" id="globalStatsGrid">
+                            <!-- Stats will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="overview-grid" id="moduleGrid">
+                        <!-- Modules will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -3797,7 +4011,7 @@
                 card.className = 'module-card';
                 card.setAttribute('data-module-id', module.id);
                 card.onclick = () => openModule(module);
-                
+
                 card.innerHTML = `
                     <div class="corner top-left"></div>
                     <div class="corner top-right"></div>
@@ -3830,6 +4044,110 @@
 
                 grid.appendChild(card);
             });
+
+            // Also update the sidebar modules list
+            renderModulesList();
+        }
+
+        /**
+         * Render modules list in left sidebar
+         */
+        function renderModulesList() {
+            const modulesList = document.getElementById('modulesList');
+            if (!modulesList) return;
+
+            modulesList.innerHTML = '';
+
+            modules.forEach(module => {
+                const { completed, total } = getModuleProgress(module);
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                const item = document.createElement('div');
+                item.className = 'module-list-item';
+                item.style.cssText = `
+                    background: rgba(0, 212, 255, 0.08);
+                    border: 1px solid rgba(0, 212, 255, 0.15);
+                    border-radius: 4px;
+                    padding: 10px 12px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    font-size: 0.8rem;
+                `;
+
+                item.onmouseover = function() {
+                    this.style.background = 'rgba(0, 212, 255, 0.15)';
+                    this.style.borderColor = 'rgba(0, 212, 255, 0.3)';
+                };
+
+                item.onmouseout = function() {
+                    this.style.background = 'rgba(0, 212, 255, 0.08)';
+                    this.style.borderColor = 'rgba(0, 212, 255, 0.15)';
+                };
+
+                item.onclick = () => openModule(module);
+
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <span style="font-size: 1rem;">${module.icon}</span>
+                        <span style="color: var(--primary); font-weight: 600; flex: 1;">${module.name}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--text-secondary);">
+                        <span>${completed}/${total}</span>
+                        <div style="width: 40px; height: 3px; background: rgba(0, 212, 255, 0.1); border-radius: 2px; overflow: hidden;">
+                            <div style="height: 100%; background: var(--primary); width: ${percentage}%; box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);"></div>
+                        </div>
+                    </div>
+                `;
+
+                modulesList.appendChild(item);
+            });
+        }
+
+        /**
+         * Switch between sidebar tabs (MODULES / TAGS)
+         */
+        function switchSidebarTab(tabName) {
+            const modulesTab = document.getElementById('modulesTab');
+            const tagsTab = document.getElementById('tagsTab');
+            const modulesPanel = document.getElementById('modulesPanel');
+            const tagsPanel = document.getElementById('tagsPanel');
+
+            if (tabName === 'modules') {
+                // Show modules, hide tags
+                modulesTab.classList.add('active');
+                tagsTab.classList.remove('active');
+                modulesPanel.classList.add('active');
+                tagsPanel.classList.remove('active');
+                modulesPanel.style.display = 'block';
+                tagsPanel.style.display = 'none';
+                localStorage.setItem('sidebar-active-tab', 'modules');
+            } else if (tabName === 'tags') {
+                // Show tags, hide modules
+                modulesTab.classList.remove('active');
+                tagsTab.classList.add('active');
+                modulesPanel.classList.remove('active');
+                tagsPanel.classList.add('active');
+                modulesPanel.style.display = 'none';
+                tagsPanel.style.display = 'block';
+                localStorage.setItem('sidebar-active-tab', 'tags');
+                // Render tag sidebar when switching to tags
+                renderTagSidebar();
+            }
+        }
+
+        /**
+         * Initialize sidebar state on page load
+         */
+        function initializeSidebar() {
+            const lastTab = localStorage.getItem('sidebar-active-tab') || 'modules';
+            renderModulesList();
+
+            // Restore the last active tab
+            if (lastTab === 'tags') {
+                switchSidebarTab('tags');
+            } else {
+                switchSidebarTab('modules');
+            }
         }
 
         function openModule(module) {
@@ -6223,6 +6541,9 @@
 
             // Initialize tag sidebar
             initializeTagSidebar();
+
+            // Initialize left sidebar with tabs and modules list
+            initializeSidebar();
 
             // Apply module from URL parameter
             if (urlParams.module) {

@@ -36,6 +36,30 @@ User Input → Event Handler → Business Logic → localStorage → UI Render
 - **Global State**: All data persisted in browser localStorage
 - **Undo/Redo**: UndoRedoManager closure with dual stacks (max 50 states)
 
+## Development Workflow & Agent Suite
+
+**Active Agent Suite**: Dreamweavers Development Agent Suite (v1.0)
+**Orchestration**: Workflow Orchestrator Agent (routing and coordination)
+**See**: `claudeSubAgents.md` for complete agent capabilities and routing guide
+
+### Agent Integration Pattern
+- **Entry Point**: Workflow Orchestrator - intelligent task routing and workflow coordination
+- **Core Development**: Software Development Agent for implementation and architecture
+- **Quality Assurance**: Code Review & Analysis Agent for security, performance, and maintainability
+- **Testing**: QA & Testing Strategy Agent for validation and test planning
+- **Documentation**: Technical Documentation Agent for guides, API docs, and ADRs
+- **Project Coordination**: Project Manager Agent for task breakdown and timeline management
+
+### Current Workflow State
+All multi-phase development tasks are coordinated through the Workflow Orchestrator, which:
+- Routes tasks to appropriate specialized agents
+- Manages phase dependencies and critical paths
+- Tracks progress across agent handoffs
+- Maintains context and ensures knowledge transfer
+- Optimizes workflows based on task patterns
+
+See `claudeSubAgents.md` for detailed agent descriptions and routing guidelines.
+
 ## Project Structure
 
 ### Single File Organization (`index.html`)
@@ -108,7 +132,7 @@ User Input → Event Handler → Business Logic → localStorage → UI Render
 - ✅ Automatic data repair for corrupted tasks
 - ✅ Storage quota checking and error recovery
 
-## Data Storage
+## Data Storage & Migration
 
 ### localStorage Keys
 ```javascript
@@ -125,26 +149,169 @@ User Input → Event Handler → Business Logic → localStorage → UI Render
 }
 ```
 
-### Task Data Structure
+### Data Structure Evolution
+
+The application supports two data formats with automatic migration between them.
+
+#### Legacy Format (Flat Task Structure)
+Used in earlier versions. Stored tasks directly at module level:
+
 ```javascript
 {
-  "taskId": {
-    "completed": boolean,
-    "priority": "high" | "medium" | "low",
-    "estimate": number,                 // hours
-    "label": string,                    // task description
+  "taskId1": {
+    "completed": false,
+    "priority": "high",
+    "estimate": 2.5,
+    "label": "Task description",
     "createdAt": timestamp,
     "dueDate": timestamp,
     "recurrence": "none" | "daily" | "weekly" | "monthly",
-    "notes": string,                    // optional
+    "notes": "optional notes",
     "subtasks": [
-      { "label": string, "completed": boolean },
-      ...
+      { "label": "Subtask", "completed": false }
     ]
   },
-  ...
+  "taskId2": { ... }
 }
 ```
+
+#### New Format (Project-Based Structure)
+Current format. Organizes tasks within projects:
+
+```javascript
+{
+  "projects": {
+    "general": {
+      "id": "general",
+      "name": "General",
+      "createdAt": timestamp,
+      "tasks": {
+        "taskId1": { /* task object */ },
+        "taskId2": { /* task object */ }
+      }
+    },
+    "proj_abc123": {
+      "id": "proj_abc123",
+      "name": "Project Name",
+      "createdAt": timestamp,
+      "tasks": {
+        "taskId3": { /* task object */ },
+        "taskId4": { /* task object */ }
+      }
+    }
+  }
+}
+```
+
+### Automatic Migration
+
+#### migrateToProjects() Function (Lines 2316-2476)
+
+Handles automatic migration from old to new format. Runs on app initialization and handles:
+
+**1. Mixed-Format Data Detection**
+- Detects when old task properties (label, completed, priority, estimate, etc.) are mixed into the projects object
+- Validates that projects object contains only valid keys (proj_*, 'general')
+- Protects against data corruption
+
+**2. Data Reorganization Paths**
+- **Flat to Projects**: All old tasks wrapped in "General" project
+- **Projects + Old Tasks**: Coexisting data properly separated
+- **Corrupted Mixed Data**: Task properties extracted, projects preserved
+- **Empty Data**: Initializes clean project structure
+- **Already Migrated**: Detects and skips redundant migrations
+
+**3. Data Preservation**
+- No task data is lost
+- Project IDs are preserved
+- Corrupted properties are safely extracted
+- Legacy tasks wrapped in special "General" project
+
+**4. Emergency Reset**
+```javascript
+// If data is severely corrupted (parse error):
+// 1. Removes corrupted data
+// 2. Initializes clean project structure
+// 3. Logs warning to console
+// 4. User continues with blank slate
+```
+
+#### Data Validation: getStorageData() Function (Lines 2174-2180)
+
+Prevents new project data from being corrupted by legacy validation:
+
+```javascript
+// Check if this is the new project-based structure
+const isProjectStructure = parsed.projects &&
+                          typeof parsed.projects === 'object' &&
+                          Object.keys(parsed).length === 1;
+
+if (isProjectStructure) {
+  // New project-based structure - return as-is
+  return parsed;
+}
+
+// Only apply old task validation to flat structures
+// ... old validation logic
+```
+
+**Key Difference**:
+- Legacy validation expects flat task objects with label/completed/priority
+- Project structure has nested format with projects → tasks hierarchy
+- Early return prevents misvalidating new structure with old rules
+
+### The "General" Project
+
+Special project that preserves old tasks during migration:
+
+```javascript
+{
+  "id": "general",
+  "name": "General",
+  "createdAt": timestamp,
+  "tasks": {
+    // Contains all tasks migrated from legacy format
+    "legacy_task": { /* task from old format */ }
+  }
+}
+```
+
+**Purpose**:
+- Provides a home for orphaned old tasks
+- Ensures no task data is lost during migration
+- Users can reorganize tasks into projects later
+- Acts as catch-all for corrupted task properties
+
+### Migration Console Messages
+
+When migration occurs, you'll see:
+```
+// Fixing mixed-format data
+Fixing corrupted projects object for life-os-afr-tasks
+Fixed corrupted projects object for life-os-afr-tasks
+
+// Normal migration
+Migrated tasks to projects for home-domain
+Fixed mixed-format data for life-os-uxr-tasks, found 2 projects and 5 old tasks
+```
+
+### Troubleshooting Data Issues
+
+**Issue**: "Projects aren't displaying"
+- Check browser console for migration messages
+- Run full page reload (Cmd+R)
+- Clear cache if problem persists
+
+**Issue**: "Tasks disappeared after update"
+- Check console for "Emergency reset performed" warning
+- Data was corrupted but should be auto-recovered
+- Contact support with console logs
+
+**Issue**: "Mixed data messages appearing"
+- Normal during first load after v2.1 update
+- Indicates old format being converted to new format
+- Safe - all data is preserved
+- Only happens once per module
 
 ## Storage Utilities
 

@@ -2171,7 +2171,15 @@
                     return {};
                 }
 
-                // Validate and repair task data
+                // Check if this is the new project-based structure
+                const isProjectStructure = parsed.projects && typeof parsed.projects === 'object' && Object.keys(parsed).length === 1;
+
+                if (isProjectStructure) {
+                    // New project-based structure - don't validate, just return it
+                    return parsed;
+                }
+
+                // Validate and repair task data (old flat structure)
                 if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
                     const validated = {};
                     let repairsNeeded = false;
@@ -2326,16 +2334,121 @@
 
                 const parsed = JSON.parse(oldData);
 
-                // Check if already migrated (has projects structure)
-                if (parsed.projects) {
-                    return; // Already in new format
+                // Check if already properly migrated (has projects structure only with no corruption)
+                if (parsed.projects && Object.keys(parsed).length === 1) {
+                    // Extra validation: check that projects only contains project IDs
+                    const projectsObj = parsed.projects;
+                    const hasCorruption = Object.keys(projectsObj).some(key => {
+                        // Valid project keys start with 'proj_' or are 'general'
+                        if (key === 'general' || key.startsWith('proj_')) return false;
+                        // Any other keys indicate corruption
+                        return true;
+                    });
+
+                    if (!hasCorruption) {
+                        return; // Already properly migrated
+                    }
                 }
 
-                // Check if empty or already in old format with tasks
+                // Check if empty
                 if (Object.keys(parsed).length === 0) {
                     // Initialize with empty projects structure
                     const newStructure = { projects: {} };
                     localStorage.setItem(storageKey, JSON.stringify(newStructure));
+                    return;
+                }
+
+                // Detect if we have projects to preserve
+                const projectIds = new Set();
+                Object.keys(parsed).forEach(key => {
+                    if (key.startsWith('proj_')) {
+                        projectIds.add(key);
+                    }
+                });
+
+                // CRITICAL: If projects object exists with mixed data, extract corrupted properties
+                if (parsed.projects && typeof parsed.projects === 'object') {
+                    const projectsObj = parsed.projects;
+                    const hasTaskProperties = ['label', 'completed', 'priority', 'estimate', 'createdAt', 'dueDate', 'recurrence'].some(
+                        prop => prop in projectsObj
+                    );
+
+                    if (hasTaskProperties) {
+                        // Projects object is corrupted with old task properties mixed in
+                        console.log(`Fixing corrupted projects object for ${storageKey}`);
+
+                        const newStructure = { projects: {} };
+                        const corruptedTask = {};
+                        const cleanProjects = {};
+
+                        // Separate task properties from project objects
+                        Object.entries(projectsObj).forEach(([key, value]) => {
+                            if (key.startsWith('proj_') || key === 'general') {
+                                // This is a valid project
+                                if (typeof value === 'object' && value.id) {
+                                    cleanProjects[key] = value;
+                                }
+                            } else if (['label', 'completed', 'priority', 'estimate', 'createdAt', 'dueDate', 'recurrence'].includes(key)) {
+                                // This is a corrupted task property
+                                corruptedTask[key] = value;
+                            }
+                        });
+
+                        // Add clean projects
+                        Object.assign(newStructure.projects, cleanProjects);
+
+                        // Add corrupted task to General project if it has content
+                        if (Object.keys(corruptedTask).length > 0) {
+                            newStructure.projects['general'] = {
+                                id: 'general',
+                                name: 'General',
+                                createdAt: Date.now(),
+                                tasks: { 'legacy_task': corruptedTask }
+                            };
+                        }
+
+                        localStorage.setItem(storageKey, JSON.stringify(newStructure));
+                        console.log(`Fixed corrupted projects object for ${storageKey}`);
+                        return;
+                    }
+                }
+
+                // Extract old tasks (anything that's not a project ID)
+                const oldTasks = {};
+
+                Object.entries(parsed).forEach(([key, value]) => {
+                    if (!key.startsWith('proj_') && key !== 'projects') {
+                        if (typeof value === 'object' && value !== null && (value.label || value.completed !== undefined || value.priority)) {
+                            oldTasks[key] = value;
+                        }
+                    }
+                });
+
+                // If there are projects already, restructure
+                if (projectIds.size > 0) {
+                    console.log(`Fixing mixed-format data for ${storageKey}, found ${projectIds.size} projects and ${Object.keys(oldTasks).length} old tasks`);
+
+                    const newStructure = { projects: {} };
+
+                    // Add any old tasks to "General" project
+                    if (Object.keys(oldTasks).length > 0) {
+                        newStructure.projects['general'] = {
+                            id: 'general',
+                            name: 'General',
+                            createdAt: Date.now(),
+                            tasks: oldTasks
+                        };
+                    }
+
+                    // Add existing projects
+                    projectIds.forEach(projectId => {
+                        if (parsed[projectId]) {
+                            newStructure.projects[projectId] = parsed[projectId];
+                        }
+                    });
+
+                    localStorage.setItem(storageKey, JSON.stringify(newStructure));
+                    console.log(`Fixed mixed-format data for ${storageKey}`);
                     return;
                 }
 
@@ -2355,6 +2468,11 @@
                 console.log(`Migrated tasks to projects for ${storageKey}`);
             } catch (error) {
                 console.error(`Migration failed for ${storageKey}:`, error);
+                // Emergency reset: clear the corrupted data
+                localStorage.removeItem(storageKey);
+                const newStructure = { projects: {} };
+                localStorage.setItem(storageKey, JSON.stringify(newStructure));
+                console.warn(`Emergency reset performed for ${storageKey}`);
             }
         }
 
@@ -2402,6 +2520,12 @@
             try {
                 console.log(`Creating project "${projectName}" in ${storageKey}`);
 
+                // CRITICAL: Save undo state BEFORE any modifications to ensure state consistency
+                UndoRedoManager.saveState(`Create project "${projectName}"`);
+
+                // CRITICAL: Ensure data is properly migrated FIRST
+                migrateToProjects(storageKey);
+
                 const data = getStorageData(storageKey);
                 const projectId = 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
@@ -2429,13 +2553,6 @@
                 }
 
                 console.log(`Project ${projectId} created successfully`);
-
-                // Save undo state AFTER successful creation
-                try {
-                    UndoRedoManager.saveState(`Create project "${projectName}"`);
-                } catch (undoError) {
-                    console.warn('Undo/redo save failed (non-critical):', undoError);
-                }
 
                 updateUndoRedoButtons();
                 return projectId;
@@ -2560,18 +2677,26 @@
          */
         function deleteTaskFromProject(storageKey, projectId, taskId) {
             try {
-                UndoRedoManager.saveState(`Delete task`);
-
                 const data = getStorageData(storageKey);
                 const project = data.projects?.[projectId];
 
                 if (project?.tasks?.[taskId]) {
                     delete project.tasks[taskId];
-                    setStorageData(storageKey, data);
+
+                    // Only save undo state if storage succeeds
+                    if (!setStorageData(storageKey, data)) {
+                        console.error('Failed to delete task');
+                        return false;
+                    }
+
+                    UndoRedoManager.saveState(`Delete task`);
                     updateUndoRedoButtons();
+                    return true;
                 }
+                return false;
             } catch (error) {
                 console.error(`Error deleting task from project ${projectId}:`, error);
+                return false;
             }
         }
 
@@ -2584,8 +2709,6 @@
          */
         function updateTaskInProject(storageKey, projectId, taskId, updates) {
             try {
-                UndoRedoManager.saveState(`Update task`);
-
                 const data = getStorageData(storageKey);
                 const task = data.projects?.[projectId]?.tasks?.[taskId];
 
@@ -2595,7 +2718,16 @@
                 }
 
                 Object.assign(task, updates);
-                return setStorageData(storageKey, data);
+
+                // Only save undo state if storage succeeds
+                if (!setStorageData(storageKey, data)) {
+                    console.error('Failed to update task');
+                    return false;
+                }
+
+                UndoRedoManager.saveState(`Update task`);
+                updateUndoRedoButtons();
+                return true;
             } catch (error) {
                 console.error(`Error updating task in project ${projectId}:`, error);
                 return false;
@@ -3000,7 +3132,7 @@
             const checklist = document.getElementById('detailChecklist');
             checklist.innerHTML = '';
 
-            if (projects.length === 0 || totalTasks === 0) {
+            if (projects.length === 0) {
                 checklist.innerHTML = `
                     <div style="text-align: center; color: var(--text-secondary); padding: 20px; font-style: italic; margin-bottom: 20px;">
                         NO PROJECTS YET // CREATE YOUR FIRST PROJECT BELOW
@@ -3031,8 +3163,8 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="task-btn edit" onclick="event.stopPropagation(); renameProjectUI('${project.id}')" style="padding: 5px 10px; font-size: 0.75rem;">RENAME</button>
-                                <button class="task-btn delete" onclick="event.stopPropagation(); deleteProject('${module.storageKey}', '${project.id}'); renderDetailView(currentModule);" style="padding: 5px 10px; font-size: 0.75rem;">DELETE</button>
+                                <button class="task-btn edit" data-project-id="${project.id}" style="padding: 5px 10px; font-size: 0.75rem;">RENAME</button>
+                                <button class="task-btn delete" data-project-id="${project.id}" data-storage-key="${module.storageKey}" style="padding: 5px 10px; font-size: 0.75rem;">DELETE</button>
                             </div>
                         </div>
                         <div class="project-tasks" style="display: none; padding: 10px;">
@@ -3041,6 +3173,24 @@
                     `;
 
                     checklist.appendChild(projectCard);
+
+                    // Add event listeners to buttons (using event delegation to prevent XSS)
+                    const renameBtn = projectCard.querySelector('.task-btn.edit');
+                    renameBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const projectId = e.target.dataset.projectId;
+                        renameProjectUI(projectId);
+                    });
+
+                    const deleteBtn = projectCard.querySelector('.task-btn.delete');
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const storageKey = e.target.dataset.storageKey;
+                        const projectId = e.target.dataset.projectId;
+                        deleteProject(storageKey, projectId);
+                        renderDetailView(currentModule);
+                    });
+
                     renderProjectTasks(module.storageKey, project, projectCard.querySelector('.project-tasks'));
                 });
 
@@ -3179,15 +3329,19 @@
 
             if (!project) return;
 
-            const newName = prompt('NEW PROJECT NAME:', project.name).trim().toUpperCase();
-            if (!newName || newName === project.name) return;
+            // Handle user cancellation (prompt returns null if cancelled)
+            const newName = prompt('NEW PROJECT NAME:', project.name);
+            if (newName === null) return;
 
-            if (newName.length > 50) {
+            const trimmedName = newName.trim().toUpperCase();
+            if (!trimmedName || trimmedName === project.name) return;
+
+            if (trimmedName.length > 50) {
                 alert('PROJECT NAME TOO LONG (MAX 50 CHARACTERS)');
                 return;
             }
 
-            renameProject(currentModule.storageKey, projectId, newName);
+            renameProject(currentModule.storageKey, projectId, trimmedName);
             renderDetailView(currentModule);
             renderDashboard();
             updateGlobalStats();

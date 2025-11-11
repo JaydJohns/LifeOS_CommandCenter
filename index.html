@@ -2275,7 +2275,13 @@
         function migrateToProjects(storageKey) {
             try {
                 const oldData = localStorage.getItem(storageKey);
-                if (!oldData) return; // No data to migrate
+
+                // If no data exists, initialize with empty projects structure
+                if (!oldData) {
+                    const newStructure = { projects: {} };
+                    localStorage.setItem(storageKey, JSON.stringify(newStructure));
+                    return;
+                }
 
                 const parsed = JSON.parse(oldData);
 
@@ -2369,11 +2375,18 @@
                     tasks: {}
                 };
 
-                setStorageData(storageKey, data);
+                // Verify save was successful before returning
+                if (!setStorageData(storageKey, data)) {
+                    console.error(`Failed to save project to storage for ${storageKey}`);
+                    updateUndoRedoButtons();
+                    return null;
+                }
+
                 updateUndoRedoButtons();
                 return projectId;
             } catch (error) {
                 console.error(`Error creating project in ${storageKey}:`, error);
+                updateUndoRedoButtons();
                 return null;
             }
         }
@@ -2433,8 +2446,9 @@
                 const project = data.projects?.[projectId];
 
                 if (!project) {
-                    console.error(`Project ${projectId} not found`);
-                    return false;
+                    console.error(`Project ${projectId} not found in storage. Available keys:`, Object.keys(data.projects || {}));
+                    updateUndoRedoButtons();
+                    return null;
                 }
 
                 if (!project.tasks) {
@@ -2448,9 +2462,17 @@
                     createdAt: taskData.createdAt || Date.now()
                 };
 
-                return setStorageData(storageKey, data) ? taskId : null;
+                if (!setStorageData(storageKey, data)) {
+                    console.error(`Failed to save task to storage for project ${projectId}`);
+                    updateUndoRedoButtons();
+                    return null;
+                }
+
+                updateUndoRedoButtons();
+                return taskId;
             } catch (error) {
                 console.error(`Error adding task to project ${projectId}:`, error);
+                updateUndoRedoButtons();
                 return null;
             }
         }

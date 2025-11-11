@@ -1279,6 +1279,253 @@
                 gap: 12px;
             }
         }
+
+        /* ============================================
+           TOOLTIP SYSTEM
+           ============================================ */
+
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: help;
+            margin-left: 6px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .help-icon:hover {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: rgba(0, 212, 255, 0.6);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-darker);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            line-height: 1.4;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid var(--primary);
+        }
+
+        .help-icon:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Help modal styles */
+        #helpModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        #helpModal.active {
+            display: flex;
+        }
+
+        .help-modal-content {
+            background: var(--bg-dark);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: auto;
+            padding: 30px;
+            color: var(--text-primary);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .help-modal-content h2 {
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .help-modal-content h3 {
+            color: var(--secondary);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .help-modal-content p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .help-section {
+            margin-bottom: 25px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .shortcut-key {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 3px;
+            padding: 4px 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--primary);
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .shortcut-description {
+            flex: 1;
+            margin-left: 15px;
+            color: var(--text-secondary);
+        }
+
+        .help-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .help-modal-close:hover {
+            color: var(--secondary);
+            transform: scale(1.2);
+        }
+
+        /* First-time onboarding banner */
+        .onboarding-banner {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 153, 255, 0.1) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .onboarding-banner.active {
+            display: flex;
+        }
+
+        .onboarding-icon {
+            font-size: 1.5rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .onboarding-content {
+            flex: 1;
+        }
+
+        .onboarding-title {
+            color: var(--primary);
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+
+        .onboarding-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .onboarding-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s ease;
+        }
+
+        .onboarding-close:hover {
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -1305,6 +1552,7 @@
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openHeatmapModal()" aria-label="View 90-day activity heatmap showing task completion intensity" aria-expanded="false" id="heatmapBtn">📈 HEATMAP</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openAnalyticsModal()" aria-label="View performance analytics with 30-day metrics and trends" aria-expanded="false" id="analyticsBtn">📉 ANALYTICS</button>
                 <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openSyncModal()" aria-label="Sync center for data export, import, and GitHub integration" aria-expanded="false" id="syncBtn">⚙️ SYNC</button>
+                <button style="margin-left: 10px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none'" onclick="openHelpModal()" aria-label="Open help and reference guide (Cmd+?)" aria-expanded="false" id="helpBtn">❓ HELP</button>
                 <button style="margin-left: 20px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease; opacity: 0.5;" onmouseover="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)' }" onmouseout="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none' }" onclick="undoAction()" aria-label="Undo last action (Cmd+Z)" id="undoBtn" disabled>↶ UNDO</button>
                 <button style="margin-left: 8px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-primary); padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; transition: all 0.3s ease; opacity: 0.5;" onmouseover="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.3)'; this.style.boxShadow='0 0 15px rgba(0, 212, 255, 0.3)' }" onmouseout="if(!this.disabled) { this.style.background='rgba(0, 212, 255, 0.15)'; this.style.boxShadow='none' }" onclick="redoAction()" aria-label="Redo last undone action (Cmd+Shift+Z)" id="redoBtn" disabled>↷ REDO</button>
             </div>
@@ -1613,6 +1861,186 @@
                 <div class="modal-buttons" style="margin-top: 20px; border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 15px;">
                     <button class="modal-btn" onclick="closeSyncModal()">CLOSE</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle" onclick="if(event.target === this) closeHelpModal()">
+            <div class="modal-content" style="max-width: 900px; max-height: 85vh;">
+                <div class="modal-header">
+                    <div class="modal-title" id="helpModalTitle">❓ HELP & REFERENCE</div>
+                    <button class="modal-close" onclick="closeHelpModal()" aria-label="Close help dialog">✕</button>
+                </div>
+
+                <div class="help-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid rgba(0, 212, 255, 0.2); padding-bottom: 15px; overflow-x: auto;">
+                    <button onclick="showHelpTab('quickstart')" id="help-tab-quickstart" class="help-tab-btn active">🚀 QUICK START</button>
+                    <button onclick="showHelpTab('features')" id="help-tab-features" class="help-tab-btn">✨ FEATURES</button>
+                    <button onclick="showHelpTab('shortcuts')" id="help-tab-shortcuts" class="help-tab-btn">⌨️ SHORTCUTS</button>
+                    <button onclick="showHelpTab('urlparams')" id="help-tab-urlparams" class="help-tab-btn">🔗 URL PARAMS</button>
+                    <button onclick="showHelpTab('tips')" id="help-tab-tips" class="help-tab-btn">💡 TIPS</button>
+                    <button onclick="showHelpTab('faq')" id="help-tab-faq" class="help-tab-btn">❓ FAQ</button>
+                </div>
+
+                <div id="helpContent" style="overflow-y: auto; height: 500px; padding: 20px; background: rgba(0, 99, 255, 0.08); border-radius: 4px; margin-bottom: 20px;">
+                    <!-- Quick Start Tab -->
+                    <div id="help-quickstart" class="help-tab-content">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">🚀 Getting Started</h3>
+                        <ol style="line-height: 2; color: var(--text-primary); font-size: 0.95rem;">
+                            <li><strong>View Dashboard:</strong> See all 9 life domains at a glance with progress indicators</li>
+                            <li><strong>Click a Module:</strong> Enter detail view to see and manage tasks</li>
+                            <li><strong>Add a Task:</strong> Enter task description, select priority (High/Medium/Low), set time estimate in hours</li>
+                            <li><strong>Complete Tasks:</strong> Click checkboxes to mark tasks complete and track progress</li>
+                            <li><strong>Use Filters:</strong> View All tasks, Today's tasks, This Week, or High Priority only</li>
+                            <li><strong>Track Progress:</strong> Watch the circular progress bar update as you complete tasks</li>
+                        </ol>
+                    </div>
+
+                    <!-- Features Tab -->
+                    <div id="help-features" class="help-tab-content" style="display: none;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">✨ Features Overview</h3>
+                        <div style="display: grid; gap: 15px;">
+                            <div style="border-left: 3px solid var(--primary); padding-left: 15px;">
+                                <strong style="color: var(--primary);">📊 Global Statistics</strong>
+                                <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">View overall completion rate, total hours, and high-priority task progress across all modules</p>
+                            </div>
+                            <div style="border-left: 3px solid var(--success); padding-left: 15px;">
+                                <strong style="color: var(--success);">🎯 Smart Filtering</strong>
+                                <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Filter by All, Today, This Week, or High Priority to focus on what matters most</p>
+                            </div>
+                            <div style="border-left: 3px solid var(--warning); padding-left: 15px;">
+                                <strong style="color: var(--warning);">📝 Notes & Subtasks</strong>
+                                <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Add detailed notes and break tasks into subtasks for better organization</p>
+                            </div>
+                            <div style="border-left: 3px solid var(--accent); padding-left: 15px;">
+                                <strong style="color: var(--accent);">🔁 Recurring Tasks</strong>
+                                <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Set tasks to repeat daily, weekly, or monthly automatically</p>
+                            </div>
+                            <div style="border-left: 3px solid #00ff88; padding-left: 15px;">
+                                <strong style="color: #00ff88;">↩️ Undo/Redo</strong>
+                                <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Revert or replay actions with keyboard shortcuts or header buttons</p>
+                            </div>
+                            <div style="border-left: 3px solid #0099ff; padding-left: 15px;">
+                                <strong style="color: #0099ff;">📥 Export & Import</strong>
+                                <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Backup your data or restore from exports through the Sync Center</p>
+                            </div>
+                            <div style="border-left: 3px solid #ff006e; padding-left: 15px;">
+                                <strong style="color: #ff006e);">🎨 Dark/Light Theme</strong>
+                                <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Toggle between dark and light themes to suit your preference</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Keyboard Shortcuts Tab -->
+                    <div id="help-shortcuts" class="help-tab-content" style="display: none;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">⌨️ Keyboard Shortcuts</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                            <div style="border: 1px solid rgba(0, 212, 255, 0.2); padding: 12px; border-radius: 4px;">
+                                <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">⏮️ Undo</div>
+                                <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Cmd+Z</code> or <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Ctrl+Z</code>
+                            </div>
+                            <div style="border: 1px solid rgba(0, 212, 255, 0.2); padding: 12px; border-radius: 4px;">
+                                <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">⏭️ Redo</div>
+                                <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Cmd+Shift+Z</code> or <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Ctrl+Shift+Z</code>
+                            </div>
+                            <div style="border: 1px solid rgba(0, 212, 255, 0.2); padding: 12px; border-radius: 4px;">
+                                <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">🔄 Redo (Alt)</div>
+                                <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Cmd+Y</code> or <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Ctrl+Y</code>
+                            </div>
+                            <div style="border: 1px solid rgba(0, 212, 255, 0.2); padding: 12px; border-radius: 4px;">
+                                <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">❓ Help</div>
+                                <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Cmd+?</code> or <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: var(--text-primary);">Ctrl+?</code>
+                            </div>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 15px; font-size: 0.85rem;">More shortcuts coming in next update!</p>
+                    </div>
+
+                    <!-- URL Parameters Tab -->
+                    <div id="help-urlparams" class="help-tab-content" style="display: none;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">🔗 URL Parameters (Bookmarking)</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">You can customize your view by adding parameters to the URL:</p>
+                        <div style="display: grid; gap: 12px; font-size: 0.85rem;">
+                            <div style="background: rgba(0, 99, 255, 0.1); padding: 12px; border-radius: 4px; border-left: 3px solid var(--primary);">
+                                <strong style="color: var(--primary);">?module=afr</strong>
+                                <p style="color: var(--text-secondary); margin-top: 4px;">Load specific module (afr, uxr, home, family, teaching, service, bellon, oak, health)</p>
+                            </div>
+                            <div style="background: rgba(0, 99, 255, 0.1); padding: 12px; border-radius: 4px; border-left: 3px solid var(--secondary);">
+                                <strong style="color: var(--secondary);">?filter=today</strong>
+                                <p style="color: var(--text-secondary); margin-top: 4px;">Set filter (all, today, week, priority)</p>
+                            </div>
+                            <div style="background: rgba(0, 99, 255, 0.1); padding: 12px; border-radius: 4px; border-left: 3px solid var(--accent);">
+                                <strong style="color: var(--accent);">?theme=light</strong>
+                                <p style="color: var(--text-secondary); margin-top: 4px;">Set theme (dark or light)</p>
+                            </div>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 15px; font-size: 0.85rem; background: rgba(255, 170, 0, 0.1); padding: 12px; border-radius: 4px; border-left: 3px solid var(--warning);">💡 <strong>Pro Tip:</strong> Bookmark URLs to quickly jump to your favorite views!</p>
+                    </div>
+
+                    <!-- Tips Tab -->
+                    <div id="help-tips" class="help-tab-content" style="display: none;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">💡 Pro Tips</h3>
+                        <ol style="line-height: 2.2; color: var(--text-primary); font-size: 0.9rem;">
+                            <li><strong>Priority Matters:</strong> Use High priority strategically for truly important tasks only</li>
+                            <li><strong>Time Estimates:</strong> Be realistic with hours—this helps you assess workload capacity</li>
+                            <li><strong>Daily Review:</strong> Check the "Today" filter each morning to stay focused</li>
+                            <li><strong>Recurring Tasks:</strong> Set up weekly or monthly recurring tasks for routine work</li>
+                            <li><strong>Notes for Context:</strong> Add details in task notes to remember why it matters</li>
+                            <li><strong>Subtasks for Complexity:</strong> Break large tasks into subtasks for better progress tracking</li>
+                            <li><strong>Undo Liberally:</strong> Don't fear mistakes—undo/redo is always available</li>
+                            <li><strong>Backup Regularly:</strong> Export your data monthly for safety</li>
+                            <li><strong>Bookmark Workflows:</strong> Save URLs for your common work patterns (e.g., ?module=home&filter=today)</li>
+                            <li><strong>Dark Theme:</strong> Use light theme during day, dark theme for evening work</li>
+                        </ol>
+                    </div>
+
+                    <!-- FAQ Tab -->
+                    <div id="help-faq" class="help-tab-content" style="display: none;">
+                        <h3 style="color: var(--primary); margin-bottom: 15px;">❓ Frequently Asked Questions</h3>
+                        <div style="display: grid; gap: 15px;">
+                            <div>
+                                <strong style="color: var(--primary);">Where is my data stored?</strong>
+                                <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">All data is stored locally in your browser's localStorage. It never leaves your device unless you export it.</p>
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary);">Can I use this offline?</strong>
+                                <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">Yes! Once loaded, Life OS works completely offline. Create, edit, and manage tasks without internet.</p>
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary);">How do I backup my data?</strong>
+                                <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">Click the ⚙️ icon to open Sync Center, then use the Export tab to download your data as JSON.</p>
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary);">Can I sync across devices?</strong>
+                                <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">Currently you can export/import manually. Cloud sync is planned for a future release.</p>
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary);">What happens if I clear browser cache?</strong>
+                                <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">Your data will be lost. Always export first if clearing cache. Consider enabling browser data protection.</p>
+                            </div>
+                            <div>
+                                <strong style="color: var(--primary);">Can I edit the modules/domains?</strong>
+                                <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">Currently the 9 domains are fixed, but you can customize the application by editing index.html directly.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="closeHelpModal()">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- First-Time User Onboarding Banner -->
+        <div id="onboardingBanner" class="onboarding-banner" style="display: none;">
+            <div class="onboarding-content">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 2rem;">🎉</div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--primary); font-size: 1.05rem; margin-bottom: 4px;">Welcome to Life OS!</div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">Your command center for managing all life domains. Need help? Click the ❓ icon or press Cmd+?</div>
+                    </div>
+                </div>
+                <button class="onboarding-close" onclick="dismissOnboardingBanner()" aria-label="Dismiss onboarding banner" style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.3rem; padding: 0; opacity: 0.7; transition: opacity 0.2s;">✕</button>
             </div>
         </div>
 
@@ -3589,6 +4017,66 @@
             }
         }
 
+        // Help Modal Functions
+        function openHelpModal() {
+            document.getElementById('helpModal').classList.add('active');
+            document.getElementById('helpBtn').setAttribute('aria-expanded', 'true');
+            // Show quick start tab by default
+            showHelpTab('quickstart');
+        }
+
+        function closeHelpModal() {
+            document.getElementById('helpModal').classList.remove('active');
+            document.getElementById('helpBtn').setAttribute('aria-expanded', 'false');
+        }
+
+        function showHelpTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.help-tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            // Remove active state from all buttons
+            document.querySelectorAll('.help-tab-btn').forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text-secondary)';
+            });
+
+            // Show selected tab
+            const selectedTab = document.getElementById(`help-${tabName}`);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+
+            // Set active button
+            const activeBtn = document.getElementById(`help-tab-${tabName}`);
+            if (activeBtn) {
+                activeBtn.style.background = 'rgba(0, 212, 255, 0.2)';
+                activeBtn.style.color = 'var(--primary)';
+            }
+        }
+
+        function showOnboardingBanner() {
+            const hasSeenOnboarding = localStorage.getItem('life-os-onboarding-shown');
+            if (!hasSeenOnboarding) {
+                const banner = document.getElementById('onboardingBanner');
+                if (banner) {
+                    banner.style.display = 'block';
+                    // Add animation
+                    banner.classList.add('slideDown');
+                }
+            }
+        }
+
+        function dismissOnboardingBanner() {
+            const banner = document.getElementById('onboardingBanner');
+            if (banner) {
+                banner.style.display = 'none';
+            }
+            // Mark as seen
+            localStorage.setItem('life-os-onboarding-shown', 'true');
+        }
+
         // Export Functions
         function exportDataAsJSON() {
             const allData = {};
@@ -3987,7 +4475,15 @@
                     e.preventDefault();
                     redoAction();
                 }
+                // Cmd+? or Ctrl+? for help
+                else if ((e.metaKey || e.ctrlKey) && e.key === '?') {
+                    e.preventDefault();
+                    openHelpModal();
+                }
             });
+
+            // Show onboarding banner for first-time users
+            showOnboardingBanner();
         });
     </script>
 </body>

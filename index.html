@@ -2243,6 +2243,47 @@
         }
 
         /**
+         * Get storage capacity information
+         * @returns {object} Storage stats including used and available space
+         */
+        function getStorageStats() {
+            try {
+                const testKey = '__storage_test__';
+                const testData = 'test';
+
+                // Try to estimate available storage
+                let totalUsed = 0;
+                modules.forEach(module => {
+                    const data = localStorage.getItem(module.storageKey);
+                    if (data) {
+                        totalUsed += data.length;
+                    }
+                });
+
+                // Add undo/redo stack size estimation
+                const undoRedoEstimate = JSON.stringify({
+                    undoStack: [],
+                    redoStack: []
+                }).length;
+
+                const estimatedTotal = totalUsed + undoRedoEstimate;
+                const quotaMB = estimatedTotal / (1024 * 1024);
+
+                return {
+                    estimatedUsedBytes: estimatedTotal,
+                    estimatedUsedMB: quotaMB.toFixed(2),
+                    moduleBreakdown: modules.map(m => ({
+                        name: m.name,
+                        bytes: localStorage.getItem(m.storageKey)?.length || 0
+                    }))
+                };
+            } catch (error) {
+                console.error('Error calculating storage stats:', error);
+                return null;
+            }
+        }
+
+        /**
          * Validate all storage data across all modules
          * @returns {object} Validation report with counts of issues found
          */
@@ -2359,7 +2400,7 @@
          */
         function createProject(storageKey, projectName) {
             try {
-                UndoRedoManager.saveState(`Create project "${projectName}"`);
+                console.log(`Creating project "${projectName}" in ${storageKey}`);
 
                 const data = getStorageData(storageKey);
                 const projectId = 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -2375,17 +2416,35 @@
                     tasks: {}
                 };
 
+                console.log(`Attempting to save project ${projectId} to storage`);
+
                 // Verify save was successful before returning
                 if (!setStorageData(storageKey, data)) {
-                    console.error(`Failed to save project to storage for ${storageKey}`);
-                    updateUndoRedoButtons();
+                    console.error(`CRITICAL: Failed to save project to storage for ${storageKey}`);
+                    const stats = getStorageStats();
+                    if (stats) {
+                        console.error('Storage stats:', stats);
+                    }
                     return null;
+                }
+
+                console.log(`Project ${projectId} created successfully`);
+
+                // Save undo state AFTER successful creation
+                try {
+                    UndoRedoManager.saveState(`Create project "${projectName}"`);
+                } catch (undoError) {
+                    console.warn('Undo/redo save failed (non-critical):', undoError);
                 }
 
                 updateUndoRedoButtons();
                 return projectId;
             } catch (error) {
                 console.error(`Error creating project in ${storageKey}:`, error);
+                const stats = getStorageStats();
+                if (stats) {
+                    console.error('Storage stats:', stats);
+                }
                 updateUndoRedoButtons();
                 return null;
             }
@@ -2440,14 +2499,13 @@
          */
         function addTaskToProject(storageKey, projectId, taskData) {
             try {
-                UndoRedoManager.saveState(`Add task to project`);
+                console.log(`Adding task to project ${projectId}`);
 
                 const data = getStorageData(storageKey);
                 const project = data.projects?.[projectId];
 
                 if (!project) {
                     console.error(`Project ${projectId} not found in storage. Available keys:`, Object.keys(data.projects || {}));
-                    updateUndoRedoButtons();
                     return null;
                 }
 
@@ -2462,17 +2520,34 @@
                     createdAt: taskData.createdAt || Date.now()
                 };
 
+                console.log(`Saving task ${taskId} to storage`);
+
                 if (!setStorageData(storageKey, data)) {
-                    console.error(`Failed to save task to storage for project ${projectId}`);
-                    updateUndoRedoButtons();
+                    console.error(`CRITICAL: Failed to save task to storage for project ${projectId}`);
+                    const stats = getStorageStats();
+                    if (stats) {
+                        console.error('Storage stats:', stats);
+                    }
                     return null;
+                }
+
+                console.log(`Task ${taskId} created successfully`);
+
+                // Save undo state AFTER successful creation
+                try {
+                    UndoRedoManager.saveState(`Add task to project`);
+                } catch (undoError) {
+                    console.warn('Undo/redo save failed (non-critical):', undoError);
                 }
 
                 updateUndoRedoButtons();
                 return taskId;
             } catch (error) {
                 console.error(`Error adding task to project ${projectId}:`, error);
-                updateUndoRedoButtons();
+                const stats = getStorageStats();
+                if (stats) {
+                    console.error('Storage stats:', stats);
+                }
                 return null;
             }
         }
@@ -3298,18 +3373,24 @@
                 }
 
                 // Get projects
+                console.log(`Getting projects for module: ${currentModule.storageKey}`);
                 const projects = getProjects(currentModule.storageKey);
+                console.log(`Found ${projects.length} projects`);
 
                 // If no projects exist, create a "General" project
                 let projectId;
                 if (projects.length === 0) {
+                    console.log('No projects found, creating "General" project...');
                     projectId = createProject(currentModule.storageKey, 'General');
                     if (!projectId) {
-                        alert('FAILED TO CREATE DEFAULT PROJECT');
+                        console.error('FAILED TO CREATE DEFAULT PROJECT - check console above for details');
+                        alert('FAILED TO CREATE DEFAULT PROJECT\n\nCheck browser console (F12) for detailed error info');
                         return;
                     }
+                    console.log(`Created project with ID: ${projectId}`);
                 } else {
                     projectId = projects[0].id;
+                    console.log(`Using first project: ${projectId}`);
                 }
 
                 // Create task data
@@ -3324,11 +3405,14 @@
                 };
 
                 // Add task to project
+                console.log(`Adding task to project ${projectId}`);
                 const taskId = addTaskToProject(currentModule.storageKey, projectId, taskData);
                 if (!taskId) {
-                    alert('FAILED TO CREATE TASK // STORAGE FULL OR UNAVAILABLE');
+                    console.error('FAILED TO ADD TASK - check console above for details');
+                    alert('FAILED TO CREATE TASK\n\nCheck browser console (F12) for detailed error info');
                     return;
                 }
+                console.log(`Task created successfully with ID: ${taskId}`);
 
                 input.value = '';
                 document.getElementById('estimateInput').value = '1';

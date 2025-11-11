@@ -2265,6 +2265,247 @@
         }
 
         // ============================================
+        // PROJECT MANAGEMENT FUNCTIONS
+        // ============================================
+
+        /**
+         * Migrate old task format to project-based format
+         * @param {string} storageKey - Module storage key
+         */
+        function migrateToProjects(storageKey) {
+            try {
+                const oldData = localStorage.getItem(storageKey);
+                if (!oldData) return; // No data to migrate
+
+                const parsed = JSON.parse(oldData);
+
+                // Check if already migrated (has projects structure)
+                if (parsed.projects) {
+                    return; // Already in new format
+                }
+
+                // Check if empty or already in old format with tasks
+                if (Object.keys(parsed).length === 0) {
+                    // Initialize with empty projects structure
+                    const newStructure = { projects: {} };
+                    localStorage.setItem(storageKey, JSON.stringify(newStructure));
+                    return;
+                }
+
+                // Migrate old tasks to "General" project
+                const newStructure = {
+                    projects: {
+                        'general': {
+                            id: 'general',
+                            name: 'General',
+                            createdAt: Date.now(),
+                            tasks: parsed
+                        }
+                    }
+                };
+
+                localStorage.setItem(storageKey, JSON.stringify(newStructure));
+                console.log(`Migrated tasks to projects for ${storageKey}`);
+            } catch (error) {
+                console.error(`Migration failed for ${storageKey}:`, error);
+            }
+        }
+
+        /**
+         * Get all projects for a module
+         * @param {string} storageKey - Module storage key
+         * @returns {array} Array of project objects
+         */
+        function getProjects(storageKey) {
+            try {
+                migrateToProjects(storageKey); // Ensure migrated format
+                const data = getStorageData(storageKey);
+                const projects = data.projects || {};
+                return Object.values(projects).sort((a, b) => a.createdAt - b.createdAt);
+            } catch (error) {
+                console.error(`Error getting projects for ${storageKey}:`, error);
+                return [];
+            }
+        }
+
+        /**
+         * Get all tasks in a project
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @returns {object} Tasks object
+         */
+        function getProjectTasks(storageKey, projectId) {
+            try {
+                const data = getStorageData(storageKey);
+                const project = data.projects?.[projectId];
+                return project?.tasks || {};
+            } catch (error) {
+                console.error(`Error getting tasks for project ${projectId}:`, error);
+                return {};
+            }
+        }
+
+        /**
+         * Create a new project
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectName - Name of the project
+         * @returns {string} Project ID
+         */
+        function createProject(storageKey, projectName) {
+            try {
+                UndoRedoManager.saveState(`Create project "${projectName}"`);
+
+                const data = getStorageData(storageKey);
+                const projectId = 'proj_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+                if (!data.projects) {
+                    data.projects = {};
+                }
+
+                data.projects[projectId] = {
+                    id: projectId,
+                    name: projectName,
+                    createdAt: Date.now(),
+                    tasks: {}
+                };
+
+                setStorageData(storageKey, data);
+                updateUndoRedoButtons();
+                return projectId;
+            } catch (error) {
+                console.error(`Error creating project in ${storageKey}:`, error);
+                return null;
+            }
+        }
+
+        /**
+         * Delete a project
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         */
+        function deleteProject(storageKey, projectId) {
+            try {
+                UndoRedoManager.saveState(`Delete project`);
+
+                const data = getStorageData(storageKey);
+                if (data.projects?.[projectId]) {
+                    delete data.projects[projectId];
+                    setStorageData(storageKey, data);
+                    updateUndoRedoButtons();
+                }
+            } catch (error) {
+                console.error(`Error deleting project ${projectId}:`, error);
+            }
+        }
+
+        /**
+         * Rename a project
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @param {string} newName - New project name
+         */
+        function renameProject(storageKey, projectId, newName) {
+            try {
+                UndoRedoManager.saveState(`Rename project to "${newName}"`);
+
+                const data = getStorageData(storageKey);
+                if (data.projects?.[projectId]) {
+                    data.projects[projectId].name = newName;
+                    setStorageData(storageKey, data);
+                    updateUndoRedoButtons();
+                }
+            } catch (error) {
+                console.error(`Error renaming project ${projectId}:`, error);
+            }
+        }
+
+        /**
+         * Add a task to a project
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @param {object} taskData - Task object
+         */
+        function addTaskToProject(storageKey, projectId, taskData) {
+            try {
+                UndoRedoManager.saveState(`Add task to project`);
+
+                const data = getStorageData(storageKey);
+                const project = data.projects?.[projectId];
+
+                if (!project) {
+                    console.error(`Project ${projectId} not found`);
+                    return false;
+                }
+
+                if (!project.tasks) {
+                    project.tasks = {};
+                }
+
+                const taskId = 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                project.tasks[taskId] = {
+                    ...taskData,
+                    id: taskId,
+                    createdAt: taskData.createdAt || Date.now()
+                };
+
+                return setStorageData(storageKey, data) ? taskId : null;
+            } catch (error) {
+                console.error(`Error adding task to project ${projectId}:`, error);
+                return null;
+            }
+        }
+
+        /**
+         * Delete a task from a project
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @param {string} taskId - Task ID
+         */
+        function deleteTaskFromProject(storageKey, projectId, taskId) {
+            try {
+                UndoRedoManager.saveState(`Delete task`);
+
+                const data = getStorageData(storageKey);
+                const project = data.projects?.[projectId];
+
+                if (project?.tasks?.[taskId]) {
+                    delete project.tasks[taskId];
+                    setStorageData(storageKey, data);
+                    updateUndoRedoButtons();
+                }
+            } catch (error) {
+                console.error(`Error deleting task from project ${projectId}:`, error);
+            }
+        }
+
+        /**
+         * Update a task in a project
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @param {string} taskId - Task ID
+         * @param {object} updates - Fields to update
+         */
+        function updateTaskInProject(storageKey, projectId, taskId, updates) {
+            try {
+                UndoRedoManager.saveState(`Update task`);
+
+                const data = getStorageData(storageKey);
+                const task = data.projects?.[projectId]?.tasks?.[taskId];
+
+                if (!task) {
+                    console.error(`Task ${taskId} not found in project ${projectId}`);
+                    return false;
+                }
+
+                Object.assign(task, updates);
+                return setStorageData(storageKey, data);
+            } catch (error) {
+                console.error(`Error updating task in project ${projectId}:`, error);
+                return false;
+            }
+        }
+
+        // ============================================
         // URL PARAMETER UTILITIES
         // ============================================
 
@@ -2497,11 +2738,24 @@
         let currentFilter = 'all';
 
         function initializeDefaultTasks(module) {
-            let tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
-            if (Object.keys(tasks).length === 0 && module.defaultTasks.length > 0) {
+            // Ensure migrated to projects format
+            migrateToProjects(module.storageKey);
+
+            const data = getStorageData(module.storageKey);
+
+            // Check if we have any projects and any tasks at all
+            const projects = data.projects || {};
+            const hasProjects = Object.keys(projects).length > 0;
+            const hasTasks = Object.values(projects).some(p => Object.keys(p.tasks || {}).length > 0);
+
+            if (!hasProjects && module.defaultTasks.length > 0) {
+                // Create "General" project with default tasks
+                const projectId = 'general';
+                const projectTasks = {};
+
                 module.defaultTasks.forEach((task, index) => {
-                    const taskId = module.id + '-' + index;
-                    tasks[taskId] = {
+                    const taskId = 'task_' + Date.now() + '_' + index;
+                    projectTasks[taskId] = {
                         completed: false,
                         priority: 'medium',
                         estimate: 2,
@@ -2509,19 +2763,36 @@
                         createdAt: Date.now()
                     };
                 });
-                localStorage.setItem(module.storageKey, JSON.stringify(tasks));
+
+                data.projects[projectId] = {
+                    id: projectId,
+                    name: 'General',
+                    createdAt: Date.now(),
+                    tasks: projectTasks
+                };
+
+                setStorageData(module.storageKey, data);
             }
-            return tasks;
+
+            return data;
         }
 
         function getModuleProgress(module) {
-            const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
-            const taskIds = Object.keys(tasks);
-            const completed = taskIds.filter(id => {
-                const task = tasks[id];
-                return typeof task === 'object' ? task.completed : task;
-            }).length;
-            return { completed, total: taskIds.length };
+            const projects = getProjects(module.storageKey);
+            let totalCompleted = 0;
+            let totalTasks = 0;
+
+            projects.forEach(project => {
+                const tasks = project.tasks || {};
+                const taskIds = Object.keys(tasks);
+                totalTasks += taskIds.length;
+                totalCompleted += taskIds.filter(id => {
+                    const task = tasks[id];
+                    return typeof task === 'object' ? task.completed : task;
+                }).length;
+            });
+
+            return { completed: totalCompleted, total: totalTasks };
         }
 
         function renderDashboard() {
@@ -2605,18 +2876,26 @@
         }
 
         function renderDetailView(module) {
-            const tasks = getStorageData(module.storageKey);
-            const taskIds = Object.keys(tasks);
-            const completed = taskIds.filter(id => {
-                const task = tasks[id];
-                return typeof task === 'object' ? task.completed : task;
-            }).length;
-            const total = taskIds.length;
-            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const projects = getProjects(module.storageKey);
+            let totalCompleted = 0;
+            let totalTasks = 0;
+
+            // Calculate aggregate stats across all projects
+            projects.forEach(project => {
+                const tasks = project.tasks || {};
+                const projectTaskIds = Object.keys(tasks);
+                totalTasks += projectTaskIds.length;
+                totalCompleted += projectTaskIds.filter(id => {
+                    const task = tasks[id];
+                    return typeof task === 'object' ? task.completed : task;
+                }).length;
+            });
+
+            const percentage = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
 
             document.getElementById('detailPercent').textContent = percentage;
-            document.getElementById('detailComplete').textContent = completed;
-            document.getElementById('detailTotal').textContent = total;
+            document.getElementById('detailComplete').textContent = totalCompleted;
+            document.getElementById('detailTotal').textContent = totalTasks;
 
             const angle = (percentage / 100) * 360;
             document.getElementById('detailCircle').style.setProperty('--progress-angle', angle + 'deg');
@@ -2624,81 +2903,256 @@
             const checklist = document.getElementById('detailChecklist');
             checklist.innerHTML = '';
 
-            if (taskIds.length === 0) {
-                checklist.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px; font-style: italic;">NO TASKS INITIALIZED // ADD YOUR FIRST TASK BELOW</div>';
+            if (projects.length === 0 || totalTasks === 0) {
+                checklist.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); padding: 20px; font-style: italic; margin-bottom: 20px;">
+                        NO PROJECTS YET // CREATE YOUR FIRST PROJECT BELOW
+                    </div>
+                    <button onclick="createNewProject()" style="width: 100%; padding: 12px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--primary); font-weight: 600; border-radius: 4px; cursor: pointer; font-family: 'Space Mono', monospace; margin-bottom: 10px; font-size: 0.85rem;">+ CREATE PROJECT</button>
+                `;
             } else {
-                let filteredTasks = taskIds;
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const weekStart = new Date(today);
-                weekStart.setDate(today.getDate() - today.getDay());
-
-                if (currentFilter === 'today') {
-                    filteredTasks = taskIds.filter(id => {
+                projects.forEach(project => {
+                    const tasks = project.tasks || {};
+                    const projectTaskIds = Object.keys(tasks);
+                    const projectCompleted = projectTaskIds.filter(id => {
                         const task = tasks[id];
-                        if (typeof task === 'object' && task.createdAt) {
-                            const taskDate = new Date(task.createdAt);
-                            taskDate.setHours(0, 0, 0, 0);
-                            return taskDate.getTime() === today.getTime();
-                        }
-                        return false;
-                    });
-                } else if (currentFilter === 'week') {
-                    filteredTasks = taskIds.filter(id => {
-                        const task = tasks[id];
-                        if (typeof task === 'object' && task.createdAt) {
-                            const taskDate = new Date(task.createdAt);
-                            taskDate.setHours(0, 0, 0, 0);
-                            return taskDate >= weekStart && taskDate <= today;
-                        }
-                        return false;
-                    });
-                } else if (currentFilter === 'high') {
-                    filteredTasks = taskIds.filter(id => {
-                        const task = tasks[id];
-                        return typeof task === 'object' ? task.priority === 'high' : false;
-                    });
-                }
+                        return typeof task === 'object' ? task.completed : task;
+                    }).length;
+                    const projectPercentage = projectTaskIds.length > 0 ? Math.round((projectCompleted / projectTaskIds.length) * 100) : 0;
 
-                if (filteredTasks.length === 0 && currentFilter !== 'all') {
-                    checklist.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 20px; font-style: italic;">NO TASKS IN ${currentFilter.toUpperCase()} FILTER</div>`;
-                } else {
-                    filteredTasks.forEach(id => {
-                        const taskData = tasks[id];
-                        const isCompleted = typeof taskData === 'object' ? taskData.completed : taskData;
-                        const priority = typeof taskData === 'object' ? taskData.priority : 'medium';
-                        const estimate = typeof taskData === 'object' ? taskData.estimate : 0;
-                        const label = typeof taskData === 'object' ? taskData.label : 'Task';
-                        const recurrence = typeof taskData === 'object' ? taskData.recurrence : 'none';
+                    const projectCard = document.createElement('div');
+                    projectCard.className = 'project-card';
+                    projectCard.style.cssText = 'border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 6px; margin-bottom: 15px; background: rgba(0, 99, 255, 0.05); overflow: hidden;';
 
-                        const recurrenceEmoji = {
-                            'daily': '📅',
-                            'weekly': '📆',
-                            'monthly': '📊',
-                            'none': ''
-                        }[recurrence] || '';
-
-                        const item = document.createElement('div');
-                        item.className = 'check-item';
-                        item.innerHTML = `
-                            <input type="checkbox" id="${id}" ${isCompleted ? 'checked' : ''} onchange="updateModuleProgress('${id}')">
-                            <div style="flex: 1;">
-                                <label for="${id}">${label}</label>
-                                <div class="task-meta">
-                                    <span class="meta-item"><span class="priority-indicator priority-${priority}"></span>${priority.toUpperCase()}</span>
-                                    <span class="meta-item">⏱️ ${estimate}h</span>
-                                    ${recurrence !== 'none' ? `<span class="meta-item">${recurrenceEmoji} ${recurrence.toUpperCase()}</span>` : ''}
+                    projectCard.innerHTML = `
+                        <div style="padding: 15px; background: rgba(0, 212, 255, 0.1); border-bottom: 1px solid rgba(0, 212, 255, 0.2); display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleProject(this)">
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                <span style="color: var(--primary); font-size: 1.2rem; user-select: none;">▶</span>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; color: var(--primary); font-size: 0.95rem;">${project.name}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 3px;">${projectCompleted}/${projectTaskIds.length} • ${projectPercentage}%</div>
                                 </div>
                             </div>
-                            <div class="task-actions">
-                                <button class="task-btn edit" onclick="openNotesModal('${id}')">NOTES</button>
-                                <button class="task-btn edit" onclick="editTask('${id}')">EDIT</button>
-                                <button class="task-btn delete" onclick="deleteTask('${id}')">DELETE</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="task-btn edit" onclick="event.stopPropagation(); renameProjectUI('${project.id}')" style="padding: 5px 10px; font-size: 0.75rem;">RENAME</button>
+                                <button class="task-btn delete" onclick="event.stopPropagation(); deleteProject('${module.storageKey}', '${project.id}'); renderDetailView(currentModule);" style="padding: 5px 10px; font-size: 0.75rem;">DELETE</button>
                             </div>
-                        `;
-                        checklist.appendChild(item);
-                    });
+                        </div>
+                        <div class="project-tasks" style="display: none; padding: 10px;">
+                            <!-- Tasks will be rendered here -->
+                        </div>
+                    `;
+
+                    checklist.appendChild(projectCard);
+                    renderProjectTasks(module.storageKey, project, projectCard.querySelector('.project-tasks'));
+                });
+
+                // Add "Create New Project" button
+                const createBtn = document.createElement('button');
+                createBtn.onclick = () => createNewProject();
+                createBtn.style.cssText = 'width: 100%; padding: 12px; background: rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--primary); font-weight: 600; border-radius: 4px; cursor: pointer; font-family: \'Space Mono\', monospace; margin-top: 10px; font-size: 0.85rem; transition: all 0.3s;';
+                createBtn.textContent = '+ CREATE PROJECT';
+                createBtn.onmouseover = (e) => {
+                    e.target.style.background = 'rgba(0, 212, 255, 0.25)';
+                    e.target.style.boxShadow = '0 0 15px rgba(0, 212, 255, 0.2)';
+                };
+                createBtn.onmouseout = (e) => {
+                    e.target.style.background = 'rgba(0, 212, 255, 0.15)';
+                    e.target.style.boxShadow = 'none';
+                };
+                checklist.appendChild(createBtn);
+            }
+        }
+
+        function renderProjectTasks(storageKey, project, container) {
+            const tasks = project.tasks || {};
+            const taskIds = Object.keys(tasks);
+
+            if (taskIds.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 15px; font-size: 0.85rem; font-style: italic;">No tasks in this project</div>';
+                return;
+            }
+
+            let filteredTasks = taskIds;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+
+            if (currentFilter === 'today') {
+                filteredTasks = taskIds.filter(id => {
+                    const task = tasks[id];
+                    if (typeof task === 'object' && task.createdAt) {
+                        const taskDate = new Date(task.createdAt);
+                        taskDate.setHours(0, 0, 0, 0);
+                        return taskDate.getTime() === today.getTime();
+                    }
+                    return false;
+                });
+            } else if (currentFilter === 'week') {
+                filteredTasks = taskIds.filter(id => {
+                    const task = tasks[id];
+                    if (typeof task === 'object' && task.createdAt) {
+                        const taskDate = new Date(task.createdAt);
+                        taskDate.setHours(0, 0, 0, 0);
+                        return taskDate >= weekStart && taskDate <= today;
+                    }
+                    return false;
+                });
+            } else if (currentFilter === 'high') {
+                filteredTasks = taskIds.filter(id => {
+                    const task = tasks[id];
+                    return typeof task === 'object' ? task.priority === 'high' : false;
+                });
+            }
+
+            if (filteredTasks.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 15px; font-size: 0.85rem; font-style: italic;">No tasks match filter</div>';
+                return;
+            }
+
+            filteredTasks.forEach(taskId => {
+                const taskData = tasks[taskId];
+                const isCompleted = typeof taskData === 'object' ? taskData.completed : taskData;
+                const priority = typeof taskData === 'object' ? taskData.priority : 'medium';
+                const estimate = typeof taskData === 'object' ? taskData.estimate : 0;
+                const label = typeof taskData === 'object' ? taskData.label : 'Task';
+                const recurrence = typeof taskData === 'object' ? taskData.recurrence : 'none';
+
+                const recurrenceEmoji = {
+                    'daily': '📅',
+                    'weekly': '📆',
+                    'monthly': '📊',
+                    'none': ''
+                }[recurrence] || '';
+
+                const item = document.createElement('div');
+                item.className = 'check-item';
+                item.innerHTML = `
+                    <input type="checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''} onchange="updateTaskInProject('${storageKey}', '${project.id}', '${taskId}')">
+                    <div style="flex: 1;">
+                        <label for="${taskId}">${label}</label>
+                        <div class="task-meta">
+                            <span class="meta-item"><span class="priority-indicator priority-${priority}"></span>${priority.toUpperCase()}</span>
+                            <span class="meta-item">⏱️ ${estimate}h</span>
+                            ${recurrence !== 'none' ? `<span class="meta-item">${recurrenceEmoji} ${recurrence.toUpperCase()}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-btn edit" onclick="openNotesModal('${taskId}')">NOTES</button>
+                        <button class="task-btn edit" onclick="editTask('${taskId}')">EDIT</button>
+                        <button class="task-btn delete" onclick="deleteTaskFromProject('${storageKey}', '${project.id}', '${taskId}'); renderDetailView(currentModule);">DELETE</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function toggleProject(header) {
+            const tasksContainer = header.nextElementSibling;
+            const arrow = header.querySelector('span');
+            tasksContainer.style.display = tasksContainer.style.display === 'none' ? 'block' : 'none';
+            arrow.textContent = tasksContainer.style.display === 'none' ? '▶' : '▼';
+        }
+
+        function createNewProject() {
+            if (!currentModule) return;
+
+            const projectName = prompt('PROJECT NAME:', '').trim().toUpperCase();
+            if (!projectName) return;
+
+            if (projectName.length > 50) {
+                alert('PROJECT NAME TOO LONG (MAX 50 CHARACTERS)');
+                return;
+            }
+
+            const projectId = createProject(currentModule.storageKey, projectName);
+            if (projectId) {
+                renderDetailView(currentModule);
+                renderDashboard();
+                updateGlobalStats();
+            }
+        }
+
+        function renameProjectUI(projectId) {
+            if (!currentModule) return;
+
+            const data = getStorageData(currentModule.storageKey);
+            const project = data.projects?.[projectId];
+
+            if (!project) return;
+
+            const newName = prompt('NEW PROJECT NAME:', project.name).trim().toUpperCase();
+            if (!newName || newName === project.name) return;
+
+            if (newName.length > 50) {
+                alert('PROJECT NAME TOO LONG (MAX 50 CHARACTERS)');
+                return;
+            }
+
+            renameProject(currentModule.storageKey, projectId, newName);
+            renderDetailView(currentModule);
+            renderDashboard();
+            updateGlobalStats();
+        }
+
+        function updateTaskInProject(storageKey, projectId, taskId) {
+            if (!currentModule) return;
+
+            try {
+                UndoRedoManager.saveState(`Task updated`);
+
+                const checkbox = document.getElementById(taskId);
+                const isCompleted = checkbox.checked;
+
+                const data = getStorageData(storageKey);
+                const task = data.projects?.[projectId]?.tasks?.[taskId];
+
+                if (!task) {
+                    console.error(`Task ${taskId} not found`);
+                    return;
                 }
+
+                task.completed = isCompleted;
+
+                // Handle recurring tasks
+                if (isCompleted && task.recurrence && task.recurrence !== 'none') {
+                    const nextDate = new Date(task.dueDate || Date.now());
+                    switch(task.recurrence) {
+                        case 'daily':
+                            nextDate.setDate(nextDate.getDate() + 1);
+                            break;
+                        case 'weekly':
+                            nextDate.setDate(nextDate.getDate() + 7);
+                            break;
+                        case 'monthly':
+                            nextDate.setMonth(nextDate.getMonth() + 1);
+                            break;
+                    }
+
+                    // Create new recurring task instance
+                    const newTaskId = 'task_' + nextDate.getTime() + '_' + Math.random().toString(36).substr(2, 9);
+                    if (!data.projects[projectId].tasks[newTaskId]) {
+                        data.projects[projectId].tasks[newTaskId] = {
+                            completed: false,
+                            priority: task.priority,
+                            estimate: task.estimate,
+                            recurrence: task.recurrence,
+                            label: task.label,
+                            createdAt: nextDate.getTime(),
+                            dueDate: nextDate.getTime()
+                        };
+                    }
+                }
+
+                if (setStorageData(storageKey, data)) {
+                    renderDetailView(currentModule);
+                    renderDashboard();
+                    updateGlobalStats();
+                    updateUndoRedoButtons();
+                }
+            } catch(error) {
+                console.error('Error updating task:', error);
             }
         }
 
@@ -2821,13 +3275,23 @@
                     return;
                 }
 
-                const tasks = getStorageData(currentModule.storageKey);
+                // Get projects
+                const projects = getProjects(currentModule.storageKey);
 
-                // Save state for undo/redo before making changes
-                UndoRedoManager.saveState(`Task created: "${taskLabel}"`);
+                // If no projects exist, create a "General" project
+                let projectId;
+                if (projects.length === 0) {
+                    projectId = createProject(currentModule.storageKey, 'General');
+                    if (!projectId) {
+                        alert('FAILED TO CREATE DEFAULT PROJECT');
+                        return;
+                    }
+                } else {
+                    projectId = projects[0].id;
+                }
 
-                const id = currentModule.id + '-' + Date.now();
-                tasks[id] = {
+                // Create task data
+                const taskData = {
                     completed: false,
                     priority: priority,
                     estimate: estimate,
@@ -2837,7 +3301,9 @@
                     dueDate: Date.now()
                 };
 
-                if (!setStorageData(currentModule.storageKey, tasks)) {
+                // Add task to project
+                const taskId = addTaskToProject(currentModule.storageKey, projectId, taskData);
+                if (!taskId) {
                     alert('FAILED TO CREATE TASK // STORAGE FULL OR UNAVAILABLE');
                     return;
                 }
@@ -2865,24 +3331,28 @@
             let highPriorityCompleted = 0;
 
             modules.forEach(module => {
-                const tasks = JSON.parse(localStorage.getItem(module.storageKey) || '{}');
-                const taskIds = Object.keys(tasks);
+                const projects = getProjects(module.storageKey);
 
-                taskIds.forEach(id => {
-                    const taskData = tasks[id];
-                    if (typeof taskData === 'object') {
-                        totalTasks++;
-                        if (taskData.completed) completedTasks++;
+                projects.forEach(project => {
+                    const tasks = project.tasks || {};
+                    const taskIds = Object.keys(tasks);
 
-                        const hours = taskData.estimate || 0;
-                        totalHours += hours;
-                        if (taskData.completed) completedHours += hours;
+                    taskIds.forEach(id => {
+                        const taskData = tasks[id];
+                        if (typeof taskData === 'object') {
+                            totalTasks++;
+                            if (taskData.completed) completedTasks++;
 
-                        if (taskData.priority === 'high') {
-                            highPriorityCount++;
-                            if (taskData.completed) highPriorityCompleted++;
+                            const hours = taskData.estimate || 0;
+                            totalHours += hours;
+                            if (taskData.completed) completedHours += hours;
+
+                            if (taskData.priority === 'high') {
+                                highPriorityCount++;
+                                if (taskData.completed) highPriorityCompleted++;
+                            }
                         }
-                    }
+                    });
                 });
             });
 

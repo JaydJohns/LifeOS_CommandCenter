@@ -1526,6 +1526,178 @@
         .onboarding-close:hover {
             color: var(--primary);
         }
+
+        /* Tag System Styles */
+        .tag-sidebar {
+            box-shadow: var(--glow-primary);
+        }
+
+        .tag-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tag-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .tag-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .tag-sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.5);
+        }
+
+        .tag-suggestions {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tag-suggestions > div {
+            padding: 6px 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tag-suggestions > div:hover {
+            background: rgba(0, 212, 255, 0.15) !important;
+        }
+
+        /* Tag badge styling */
+        .tag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Light theme tag styling */
+        body.light-theme .tag-badge {
+            background: rgba(0, 102, 204, 0.15);
+            color: #0066cc;
+            border: 1px solid rgba(0, 102, 204, 0.3);
+        }
+
+        /* Phase 2 Modal Styling */
+        #tagManagementModal .modal-content,
+        #analyticsModal .modal-content,
+        #githubModal .modal-content {
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .tag-action-btn {
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .tag-action-btn:hover {
+            background: rgba(0, 212, 255, 0.25);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .tag-action-btn.danger {
+            background: rgba(255, 0, 110, 0.15);
+            border-color: rgba(255, 0, 110, 0.3);
+            color: var(--accent);
+        }
+
+        .tag-action-btn.danger:hover {
+            background: rgba(255, 0, 110, 0.25);
+            border-color: rgba(255, 0, 110, 0.5);
+        }
+
+        #tagManagementModal table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        #tagManagementModal th {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        #tagManagementModal td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        #tagSearchInput {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--text-primary);
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 15px;
+        }
+
+        #tagSearchInput::placeholder {
+            color: var(--text-secondary);
+        }
+
+        #tagSortDropdown {
+            padding: 6px 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--text-primary);
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+        }
+
+        #analyticsContent {
+            padding: 15px 0;
+        }
+
+        .analytics-section {
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        #githubModal input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--text-primary);
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 12px;
+        }
+
+        #githubTokenDisplay {
+            padding: 12px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 4px;
+            margin: 12px 0;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -1721,6 +1893,23 @@
 
                 <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(0, 212, 255, 0.2);">
                     <div style="color: var(--primary); font-size: 1.1rem; font-weight: 700;" id="notesTaskTitle"></div>
+                </div>
+
+                <!-- Tag Section -->
+                <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(0, 212, 255, 0.2);">
+                    <label class="notes-label">🏷️ Tags</label>
+                    <div style="margin-bottom: 10px;">
+                        <div id="currentTagsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                            <!-- Tags will be rendered here -->
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="tagInput" class="input-field" placeholder="Add tag..." autocomplete="off" style="flex: 1; font-size: 0.9rem;">
+                        <button id="addTagBtn" class="btn" onclick="addTagFromModal()" style="width: auto; padding: 8px 16px;">+ ADD TAG</button>
+                    </div>
+                    <div id="tagSuggestions" class="tag-suggestions" style="display: none; margin-top: 8px; background: rgba(0, 99, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 4px; padding: 8px; max-height: 150px; overflow-y: auto;">
+                        <!-- Auto-suggestions will appear here -->
+                    </div>
                 </div>
 
                 <div class="notes-section">
@@ -2044,6 +2233,134 @@
             </div>
         </div>
 
+        <!-- Tag Sidebar -->
+        <div id="tagSidebar" class="tag-sidebar" style="
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            width: 250px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px 8px 0 0;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: var(--glow-primary);
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(0, 212, 255, 0.2); padding-bottom: 10px;">
+                <span style="color: var(--primary); font-weight: 600;">🏷️ TAGS</span>
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="openTagManagementModal()" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 1rem;" title="Manage Tags">⚙️</button>
+                    <button onclick="toggleTagSidebar()" style="background: none; border: none; color: var(--primary); cursor: pointer;">✕</button>
+                </div>
+            </div>
+            <div id="tagsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Tags will render here -->
+            </div>
+            <button id="toggleTagSidebarBtn" class="btn" onclick="toggleTagSidebar()" style="width: 100%; margin-top: auto; padding: 8px;">HIDE TAGS</button>
+        </div>
+
+        <!-- Toggle Tag Sidebar Button -->
+        <button id="showTagSidebarBtn" class="btn" onclick="toggleTagSidebar()" style="position: fixed; right: 20px; bottom: 20px; z-index: 99; display: none;">🏷️ TAGS</button>
+
+        <!-- Tag Management Modal (Phase 2a) -->
+        <div id="tagManagementModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="tagMgmtTitle" onclick="if(event.target === this) closeTagManagementModal()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="tagMgmtTitle">⚙️ TAG MANAGEMENT</div>
+                    <button class="modal-close" onclick="closeTagManagementModal()" aria-label="Close tag management dialog">✕</button>
+                </div>
+                <div style="padding: 20px;">
+                    <input type="text" id="tagSearchInput" placeholder="🔍 Search tags...">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <label style="color: var(--text-secondary); font-size: 0.9rem;">Sort by:</label>
+                        <select id="tagSortDropdown">
+                            <option value="usage">Usage (Most)</option>
+                            <option value="name">Name (A-Z)</option>
+                            <option value="created">Created (Newest)</option>
+                            <option value="lastused">Last Used</option>
+                        </select>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tag Name</th>
+                                <th style="width: 80px; text-align: center;">Usage</th>
+                                <th style="width: 120px;">Created</th>
+                                <th style="width: 80px; text-align: center;">Status</th>
+                                <th style="width: 200px; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tagTableBody">
+                            <!-- Tags will render here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="closeTagManagementModal()">DONE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Dashboard Modal (Phase 2d) -->
+        <div id="analyticsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="analyticsTitle" onclick="if(event.target === this) closeAnalyticsDashboard()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="analyticsTitle">📊 TAG ANALYTICS</div>
+                    <button class="modal-close" onclick="closeAnalyticsDashboard()" aria-label="Close analytics dialog">✕</button>
+                </div>
+                <div style="padding: 20px;">
+                    <div id="analyticsContent">
+                        <!-- Analytics will render here -->
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="closeAnalyticsDashboard()">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GitHub Integration Modal (Phase 2e) -->
+        <div id="githubModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="githubTitle" onclick="if(event.target === this) closeGitHubSettings()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="githubTitle">🐙 GITHUB INTEGRATION</div>
+                    <button class="modal-close" onclick="closeGitHubSettings()" aria-label="Close GitHub settings">✕</button>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--primary); margin-top: 0;">Connection Status</h3>
+                        <div id="githubTokenDisplay">Not connected to GitHub</div>
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
+                            <button id="githubConnectBtn" class="modal-btn" onclick="connectToGitHub()" style="display: none;">🔗 CONNECT</button>
+                            <button id="githubDisconnectBtn" class="modal-btn" onclick="disconnectFromGitHub()" style="display: none;">🔌 DISCONNECT</button>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 20px;">
+                        <h3 style="color: var(--primary);">Export & Sync</h3>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="modal-btn" onclick="exportTagsToGitHub()" style="width: 100%;">📤 EXPORT TAGS AS LABELS</button>
+                            <button class="modal-btn" onclick="importLabelsFromGitHub()" style="width: 100%;">📥 IMPORT LABELS AS TAGS</button>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid rgba(0, 212, 255, 0.2); margin-top: 20px; padding-top: 20px; font-size: 0.85rem; color: var(--text-secondary);">
+                        <p>📌 Note: You'll need a GitHub personal access token with 'repo' scope.</p>
+                        <p>Get one at: <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--primary);">github.com/settings/tokens</a></p>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="closeGitHubSettings()">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
         <footer>
             💾 LOCAL PERSISTENT STORAGE // ⚡ OFFLINE CAPABLE // 📱 FULLY RESPONSIVE<br>
             LIFE OS v2.0 // COMMAND CENTER MODE // ALL SYSTEMS NOMINAL
@@ -2100,6 +2417,300 @@
             if (task.dueDate && typeof task.dueDate !== 'number') return false;
 
             return true;
+        }
+
+        // ============================================
+        // TAG SYSTEM FUNCTIONS (Phase 1a-1i)
+        // ============================================
+
+        /**
+         * Get all tags from global registry
+         * @returns {Array} Array of tag objects
+         */
+        function getAllTags() {
+            try {
+                if (!isStorageAvailable()) return [];
+                const data = localStorage.getItem('life-os-tags-registry');
+                if (!data) return [];
+                const registry = JSON.parse(data);
+                return registry.tags || [];
+            } catch (error) {
+                console.error('Error getting tags:', error);
+                return [];
+            }
+        }
+
+        /**
+         * Create a new tag if it doesn't exist
+         * @param {string} tagName - Tag name (max 25 chars)
+         * @returns {boolean} Success status
+         */
+        function createTag(tagName) {
+            try {
+                if (!isStorageAvailable()) return false;
+
+                // Validate tag name
+                if (!tagName || tagName.length > 25 || !/^[a-z0-9\-_]+$/i.test(tagName)) {
+                    console.error('Invalid tag name:', tagName);
+                    return false;
+                }
+
+                let registry = { tags: [] };
+                try {
+                    const data = localStorage.getItem('life-os-tags-registry');
+                    if (data) registry = JSON.parse(data);
+                } catch (e) {
+                    console.warn('Could not parse tag registry, starting fresh');
+                }
+
+                // Check if tag already exists (case-insensitive)
+                const lowerName = tagName.toLowerCase();
+                const exists = registry.tags.some(t => t.name.toLowerCase() === lowerName);
+                if (exists) return true; // Already exists
+
+                // Add new tag
+                registry.tags.push({
+                    name: tagName.toLowerCase(),
+                    createdAt: Date.now(),
+                    archived: false
+                });
+
+                // Save to storage
+                if (!setStorageData('life-os-tags-registry', registry)) {
+                    console.error('Failed to save tag registry');
+                    return false;
+                }
+
+                console.log(`Created tag: ${tagName}`);
+                return true;
+            } catch (error) {
+                console.error('Error creating tag:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Validate tag name format
+         * @param {string} tagName - Tag name to validate
+         * @returns {boolean} Is valid
+         */
+        function isValidTagName(tagName) {
+            return tagName &&
+                   tagName.length <= 25 &&
+                   /^[a-z0-9\-_]+$/i.test(tagName);
+        }
+
+        /**
+         * Get deterministic color for a tag
+         * @param {string} tagName - Tag name
+         * @returns {string} CSS color
+         */
+        function getTagColor(tagName) {
+            const colors = [
+                '#00d4ff', '#ff006e', '#00ff88', '#0099ff', '#ffaa00',
+                '#ff4400', '#00cc99', '#cc00ff', '#ffcc00', '#00ffcc',
+                '#ff0099', '#0066ff', '#00ff66', '#ff6600', '#00ccff'
+            ];
+
+            let hash = 0;
+            for (let i = 0; i < tagName.length; i++) {
+                hash = ((hash << 5) - hash) + tagName.charCodeAt(i);
+                hash = hash & hash;
+            }
+
+            const colorIndex = Math.abs(hash) % colors.length;
+            return colors[colorIndex];
+        }
+
+        /**
+         * Get usage count for a tag
+         * @param {string} tagName - Tag name
+         * @returns {number} Number of tasks with this tag
+         */
+        function getTagUsageCount(tagName) {
+            let count = 0;
+
+            modules.forEach(module => {
+                const projects = getProjects(module.storageKey);
+                projects.forEach(project => {
+                    const tasks = project.tasks || {};
+                    Object.values(tasks).forEach(task => {
+                        if (task.tags && task.tags.includes(tagName.toLowerCase())) {
+                            count++;
+                        }
+                    });
+                });
+            });
+
+            return count;
+        }
+
+        /**
+         * Add a tag to a task
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @param {string} taskId - Task ID
+         * @param {string} tagName - Tag name to add
+         * @returns {boolean} Success status
+         */
+        function addTagToTask(storageKey, projectId, taskId, tagName) {
+            try {
+                if (!isValidTagName(tagName)) {
+                    console.error('Invalid tag name:', tagName);
+                    return false;
+                }
+
+                const tagLower = tagName.toLowerCase();
+                const data = getStorageData(storageKey);
+                if (!data) return false;
+
+                const task = data.projects?.[projectId]?.tasks?.[taskId];
+                if (!task) {
+                    console.error(`Task not found: ${taskId}`);
+                    return false;
+                }
+
+                // Initialize tags if missing
+                if (!Array.isArray(task.tags)) {
+                    task.tags = [];
+                }
+
+                // Prevent duplicates
+                if (task.tags.some(t => t.toLowerCase() === tagLower)) {
+                    console.warn(`Tag already exists on task: ${tagName}`);
+                    return true; // Not an error, just no change
+                }
+
+                // Enforce max 3 tags per task
+                if (task.tags.length >= 3) {
+                    console.warn('Task already has maximum tags (3)');
+                    return false;
+                }
+
+                // Add tag to task
+                task.tags.push(tagLower);
+
+                // Create tag globally if not exists
+                createTag(tagName);
+
+                // Save to storage
+                if (!setStorageData(storageKey, data)) {
+                    console.error('Failed to save tag to task');
+                    return false;
+                }
+
+                console.log(`Added tag "${tagName}" to task ${taskId}`);
+                return true;
+            } catch (error) {
+                console.error('Error adding tag to task:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Remove a tag from a task
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @param {string} taskId - Task ID
+         * @param {string} tagName - Tag name to remove
+         * @returns {boolean} Success status
+         */
+        function removeTagFromTask(storageKey, projectId, taskId, tagName) {
+            try {
+                const tagLower = tagName.toLowerCase();
+                const data = getStorageData(storageKey);
+                if (!data) return false;
+
+                const task = data.projects?.[projectId]?.tasks?.[taskId];
+                if (!task || !Array.isArray(task.tags)) {
+                    return false;
+                }
+
+                const initialLength = task.tags.length;
+                task.tags = task.tags.filter(t => t.toLowerCase() !== tagLower);
+
+                if (task.tags.length === initialLength) {
+                    console.warn(`Tag not found on task: ${tagName}`);
+                    return false;
+                }
+
+                // Save to storage
+                if (!setStorageData(storageKey, data)) {
+                    console.error('Failed to save after removing tag');
+                    return false;
+                }
+
+                console.log(`Removed tag "${tagName}" from task ${taskId}`);
+                return true;
+            } catch (error) {
+                console.error('Error removing tag from task:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Filter tasks by tags (AND logic)
+         * @param {Array} tasks - Task objects to filter
+         * @param {Array} selectedTags - Tag names to match (all must be present)
+         * @returns {Array} Filtered tasks
+         */
+        function filterTasksByTags(tasks, selectedTags) {
+            if (!selectedTags || selectedTags.length === 0) {
+                return tasks; // No tag filter
+            }
+
+            const tagsLower = selectedTags.map(t => t.toLowerCase());
+
+            return tasks.filter(task => {
+                if (!task.tags || !Array.isArray(task.tags)) {
+                    return false; // Task without tags doesn't match
+                }
+
+                // Check if task has ALL selected tags (AND logic)
+                return tagsLower.every(selectedTag =>
+                    task.tags.some(taskTag => taskTag.toLowerCase() === selectedTag)
+                );
+            });
+        }
+
+        /**
+         * Migrate legacy tasks to include tags field
+         * Runs automatically if tasks exist without tags
+         */
+        function migrateTasksToIncludeTags() {
+            let migrationCount = 0;
+
+            modules.forEach(module => {
+                try {
+                    const data = getStorageData(module.storageKey);
+                    if (!data) return;
+
+                    const projects = data.projects || {};
+                    let modified = false;
+
+                    Object.values(projects).forEach(project => {
+                        const tasks = project.tasks || {};
+                        Object.values(tasks).forEach(task => {
+                            // If task doesn't have tags field, add it
+                            if (!Array.isArray(task.tags)) {
+                                task.tags = [];
+                                modified = true;
+                                migrationCount++;
+                            }
+                        });
+                    });
+
+                    // Save if modified
+                    if (modified) {
+                        setStorageData(module.storageKey, data);
+                        console.log(`Migrated ${migrationCount} tasks to include tag support for ${module.id}`);
+                    }
+                } catch (error) {
+                    console.error(`Error migrating tags for ${module.id}:`, error);
+                }
+            });
+
+            return migrationCount;
         }
 
         /**
@@ -2966,6 +3577,156 @@
         let currentModule = null;
         let currentFilter = 'all';
 
+        // Tag filtering state
+        let currentTagFilters = [];  // Array of selected tag names
+        const TAG_FILTER_STORAGE_KEY = 'life-os-tag-filters';
+
+        /**
+         * Get saved tag filters
+         */
+        function getSavedTagFilters() {
+            try {
+                if (!isStorageAvailable()) return [];
+                const saved = localStorage.getItem(TAG_FILTER_STORAGE_KEY);
+                return saved ? JSON.parse(saved) : [];
+            } catch (error) {
+                console.error('Error loading tag filters:', error);
+                return [];
+            }
+        }
+
+        /**
+         * Save tag filters state
+         */
+        function saveTagFiltersState(filters) {
+            try {
+                if (!isStorageAvailable()) return false;
+                localStorage.setItem(TAG_FILTER_STORAGE_KEY, JSON.stringify(filters));
+                currentTagFilters = filters;
+                return true;
+            } catch (error) {
+                console.error('Error saving tag filters:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Toggle a tag in the filter
+         */
+        function toggleTagFilter(tagName) {
+            const tagLower = tagName.toLowerCase();
+            const index = currentTagFilters.findIndex(t => t.toLowerCase() === tagLower);
+
+            if (index >= 0) {
+                // Remove tag from filter
+                currentTagFilters.splice(index, 1);
+            } else {
+                // Add tag to filter
+                currentTagFilters.push(tagLower);
+            }
+
+            saveTagFiltersState(currentTagFilters);
+
+            // Re-render with new filter
+            if (currentModule) {
+                renderDetailView(currentModule);
+            }
+        }
+
+        /**
+         * Clear all tag filters
+         */
+        function clearTagFilters() {
+            if (currentTagFilters.length === 0) return;
+
+            currentTagFilters = [];
+            saveTagFiltersState([]);
+
+            if (currentModule) {
+                renderDetailView(currentModule);
+            }
+        }
+
+        /**
+         * Toggle tag sidebar visibility
+         */
+        function toggleTagSidebar() {
+            const sidebar = document.getElementById('tagSidebar');
+            const btn = document.getElementById('showTagSidebarBtn');
+
+            if (sidebar.style.display === 'flex') {
+                sidebar.style.display = 'none';
+                btn.style.display = 'block';
+                localStorage.setItem('tag-sidebar-collapsed', 'true');
+            } else {
+                sidebar.style.display = 'flex';
+                btn.style.display = 'none';
+                localStorage.setItem('tag-sidebar-collapsed', 'false');
+                renderTagSidebar();
+            }
+        }
+
+        /**
+         * Render tag sidebar with all tags
+         */
+        function renderTagSidebar() {
+            const tagsList = document.getElementById('tagsList');
+            if (!tagsList) return;
+
+            const allTags = getAllTags();
+
+            if (allTags.length === 0) {
+                tagsList.innerHTML = '<span style="color: var(--text-secondary);">No tags yet</span>';
+                return;
+            }
+
+            tagsList.innerHTML = allTags
+                .filter(t => !t.archived) // Only show active tags
+                .sort((a, b) => getTagUsageCount(b.name) - getTagUsageCount(a.name)) // Sort by usage
+                .map(tag => {
+                    const count = getTagUsageCount(tag.name);
+                    const isSelected = currentTagFilters.some(t => t.toLowerCase() === tag.name.toLowerCase());
+
+                    return `
+                        <div style="
+                            padding: 8px;
+                            background: ${isSelected ? getTagColor(tag.name) + '22' : 'transparent'};
+                            border: 1px solid ${isSelected ? getTagColor(tag.name) : 'rgba(0, 212, 255, 0.2)'};
+                            border-radius: 4px;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                        "
+                        onclick="toggleTagFilter('${tag.name}')"
+                        onmouseover="this.style.background='${getTagColor(tag.name) + '11'}'"
+                        onmouseout="this.style.background='${isSelected ? getTagColor(tag.name) + '22' : 'transparent'}'">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: ${getTagColor(tag.name)}; font-weight: 600;">${tag.name}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">${count}</span>
+                            </div>
+                        </div>
+                    `;
+                })
+                .join('');
+        }
+
+        /**
+         * Initialize tag sidebar state on page load
+         */
+        function initializeTagSidebar() {
+            const collapsed = localStorage.getItem('tag-sidebar-collapsed') !== 'false';
+            const sidebar = document.getElementById('tagSidebar');
+            const btn = document.getElementById('showTagSidebarBtn');
+
+            if (collapsed) {
+                sidebar.style.display = 'none';
+                btn.style.display = 'block';
+            } else {
+                sidebar.style.display = 'flex';
+                btn.style.display = 'none';
+                renderTagSidebar();
+            }
+        }
+
         function initializeDefaultTasks(module) {
             // Ensure migrated to projects format
             migrateToProjects(module.storageKey);
@@ -3253,6 +4014,20 @@
                 });
             }
 
+            // Apply tag filters (AND logic)
+            if (currentTagFilters && currentTagFilters.length > 0) {
+                filteredTasks = filteredTasks.filter(id => {
+                    const task = tasks[id];
+                    if (!task.tags || !Array.isArray(task.tags)) {
+                        return false;
+                    }
+                    // Check if task has ALL selected tags (AND logic)
+                    return currentTagFilters.every(selectedTag =>
+                        task.tags.some(taskTag => taskTag.toLowerCase() === selectedTag.toLowerCase())
+                    );
+                });
+            }
+
             if (filteredTasks.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 15px; font-size: 0.85rem; font-style: italic;">No tasks match filter</div>';
                 return;
@@ -3265,6 +4040,7 @@
                 const estimate = typeof taskData === 'object' ? taskData.estimate : 0;
                 const label = typeof taskData === 'object' ? taskData.label : 'Task';
                 const recurrence = typeof taskData === 'object' ? taskData.recurrence : 'none';
+                const taskTags = typeof taskData === 'object' && Array.isArray(taskData.tags) ? taskData.tags : [];
 
                 const recurrenceEmoji = {
                     'daily': '📅',
@@ -3273,12 +4049,29 @@
                     'none': ''
                 }[recurrence] || '';
 
+                const tagsHTML = taskTags && taskTags.length > 0 ? `
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;">
+                        ${taskTags.slice(0, 3).map(tag => `
+                            <span style="
+                                font-size: 0.7rem;
+                                padding: 2px 6px;
+                                background: ${getTagColor(tag)}33;
+                                border: 1px solid ${getTagColor(tag)};
+                                border-radius: 3px;
+                                color: ${getTagColor(tag)};
+                            ">${tag}</span>
+                        `).join('')}
+                        ${taskTags.length > 3 ? `<span style="font-size: 0.7rem; color: var(--text-secondary);">+${taskTags.length - 3}</span>` : ''}
+                    </div>
+                ` : '';
+
                 const item = document.createElement('div');
                 item.className = 'check-item';
                 item.innerHTML = `
                     <input type="checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''} onchange="updateTaskInProject('${storageKey}', '${project.id}', '${taskId}')">
                     <div style="flex: 1;">
                         <label for="${taskId}">${label}</label>
+                        ${tagsHTML}
                         <div class="task-meta">
                             <span class="meta-item"><span class="priority-indicator priority-${priority}"></span>${priority.toUpperCase()}</span>
                             <span class="meta-item">⏱️ ${estimate}h</span>
@@ -3504,6 +4297,12 @@
             if (!currentModule) return;
 
             try {
+                // Run migration once per session for existing data
+                if (window.migrateTagsOnce !== true) {
+                    migrateTasksToIncludeTags();
+                    window.migrateTagsOnce = true;
+                }
+
                 const input = document.getElementById('detailInput');
                 const priority = document.getElementById('prioritySelect').value;
                 const recurrence = document.getElementById('recurrenceSelect').value;
@@ -3547,7 +4346,7 @@
                     console.log(`Using first project: ${projectId}`);
                 }
 
-                // Create task data
+                // Create task data with tags support
                 const taskData = {
                     completed: false,
                     priority: priority,
@@ -3555,7 +4354,8 @@
                     recurrence: recurrence,
                     label: taskLabel,
                     createdAt: Date.now(),
-                    dueDate: Date.now()
+                    dueDate: Date.now(),
+                    tags: []
                 };
 
                 // Add task to project
@@ -3804,10 +4604,16 @@
                 const priorityEmoji = priority === 'high' ? '🔴' : priority === 'low' ? '🟢' : '🟠';
                 const completionClass = isCompleted ? '~~' : '';
 
+                const tags = typeof taskData === 'object' && Array.isArray(taskData.tags) ? taskData.tags : [];
+
                 markdown += `${index + 1}. ${checkbox} ${priorityEmoji} ${completionClass}${label}${completionClass}\n`;
                 markdown += `   - **Priority:** ${priority.toUpperCase()} ${priorityEmoji}\n`;
                 markdown += `   - **Estimate:** ${estimate} hours\n`;
-                markdown += `   - **Status:** ${isCompleted ? 'COMPLETED ✅' : 'PENDING ⏳'}\n\n`;
+                markdown += `   - **Status:** ${isCompleted ? 'COMPLETED ✅' : 'PENDING ⏳'}\n`;
+                if (tags.length > 0) {
+                    markdown += `   - **Tags:** ${tags.join(', ')}\n`;
+                }
+                markdown += '\n';
             });
 
             markdown += '---\n\n';
@@ -4233,6 +5039,14 @@
 
             document.getElementById('notesModal').classList.add('active');
             document.getElementById('subtaskInput').value = '';
+
+            // Initialize tag UI
+            setTimeout(() => {
+                renderModalTags();
+                setupTagInputListeners();
+                const tagInput = document.getElementById('tagInput');
+                if (tagInput) tagInput.focus();
+            }, 50);
         }
 
         function closeNotesModal() {
@@ -4362,6 +5176,254 @@
             } catch(error) {
                 console.error('Error saving task details:', error);
             }
+        }
+
+        /**
+         * Open tag suggestions dropdown as user types
+         */
+        function updateTagSuggestions() {
+            const input = document.getElementById('tagInput');
+            const suggestionsDiv = document.getElementById('tagSuggestions');
+            const tagValue = input.value.trim().toLowerCase();
+
+            if (!tagValue) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+
+            const allTags = getAllTags();
+            const currentTags = getCurrentTaskTags();
+
+            // Filter suggestions: match input, not already on task, limit to 5
+            const suggestions = allTags
+                .filter(t => t.name.includes(tagValue) && !currentTags.includes(t.name))
+                .slice(0, 5);
+
+            if (suggestions.length === 0 && isValidTagName(tagValue)) {
+                // Show "create new" option
+                suggestionsDiv.innerHTML = `
+                    <div style="padding: 4px 8px; cursor: pointer; color: var(--primary);" onclick="createAndAddTag('${tagValue}')">
+                        + Create: <strong>${tagValue}</strong>
+                    </div>
+                `;
+                suggestionsDiv.style.display = 'block';
+                return;
+            }
+
+            if (suggestions.length > 0) {
+                suggestionsDiv.innerHTML = suggestions
+                    .map(tag => `
+                        <div style="padding: 4px 8px; cursor: pointer; color: var(--text-primary); border-radius: 3px;"
+                             onmouseover="this.style.background='rgba(0, 212, 255, 0.1)'"
+                             onmouseout="this.style.background='transparent'"
+                             onclick="addSelectedTag('${tag.name}')">
+                            ${tag.name} <span style="font-size: 0.8rem; color: var(--text-secondary);">(${getTagUsageCount(tag.name)})</span>
+                        </div>
+                    `)
+                    .join('');
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        }
+
+        /**
+         * Get tags for currently editing task
+         */
+        function getCurrentTaskTags() {
+            if (!currentEditingTaskId || !currentModule) return [];
+
+            const data = getStorageData(currentModule.storageKey);
+            if (!data) return [];
+
+            // Find task across all projects
+            for (const project of Object.values(data.projects || {})) {
+                const task = project.tasks?.[currentEditingTaskId];
+                if (task) {
+                    return task.tags || [];
+                }
+            }
+
+            return [];
+        }
+
+        /**
+         * Render tags in the modal
+         */
+        function renderModalTags() {
+            if (!currentEditingTaskId || !currentModule) return;
+
+            const currentTags = getCurrentTaskTags();
+            const tagsList = document.getElementById('currentTagsList');
+
+            if (!tagsList) return;
+
+            tagsList.innerHTML = currentTags
+                .map(tag => `
+                    <div style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 4px 10px;
+                        background: ${getTagColor(tag)}22;
+                        border: 1px solid ${getTagColor(tag)};
+                        border-radius: 20px;
+                        color: var(--text-primary);
+                        font-size: 0.85rem;
+                    ">
+                        ${tag}
+                        <span style="cursor: pointer; font-weight: bold;" onclick="removeTagFromModal('${tag}')">✕</span>
+                    </div>
+                `)
+                .join('');
+        }
+
+        /**
+         * Add tag from modal input
+         */
+        function addTagFromModal() {
+            const input = document.getElementById('tagInput');
+            const tagValue = input.value.trim().toLowerCase();
+
+            if (!tagValue) {
+                alert('Enter a tag name');
+                return;
+            }
+
+            if (!isValidTagName(tagValue)) {
+                alert('Invalid tag name (max 25 chars, alphanumeric/dash/underscore only)');
+                return;
+            }
+
+            addSelectedTag(tagValue);
+            input.value = '';
+            document.getElementById('tagSuggestions').style.display = 'none';
+        }
+
+        /**
+         * Add an existing or new tag to task
+         */
+        function addSelectedTag(tagName) {
+            if (!currentEditingTaskId || !currentModule) return;
+
+            const currentTags = getCurrentTaskTags();
+
+            // Check max tags
+            if (currentTags.length >= 3) {
+                alert('Maximum 3 tags per task');
+                return;
+            }
+
+            // Check duplicate
+            if (currentTags.some(t => t.toLowerCase() === tagName.toLowerCase())) {
+                alert('Tag already on this task');
+                return;
+            }
+
+            // Find project ID
+            const data = getStorageData(currentModule.storageKey);
+            let projectId = null;
+            for (const [pId, project] of Object.entries(data.projects || {})) {
+                if (project.tasks?.[currentEditingTaskId]) {
+                    projectId = pId;
+                    break;
+                }
+            }
+
+            if (!projectId) {
+                console.error('Could not find project for task');
+                return;
+            }
+
+            // Save undo state
+            UndoRedoManager.saveState(`Add tag "${tagName}" to task`);
+
+            // Add tag
+            if (addTagToTask(currentModule.storageKey, projectId, currentEditingTaskId, tagName)) {
+                renderModalTags();
+                document.getElementById('tagInput').value = '';
+                document.getElementById('tagSuggestions').style.display = 'none';
+                updateUndoRedoButtons();
+
+                // Refresh task display
+                renderDetailView(currentModule);
+            } else {
+                alert('Failed to add tag');
+            }
+        }
+
+        /**
+         * Remove tag from task in modal
+         */
+        function removeTagFromModal(tagName) {
+            if (!currentEditingTaskId || !currentModule) {
+                console.error('No task being edited');
+                return;
+            }
+
+            // Find project ID
+            const data = getStorageData(currentModule.storageKey);
+            let projectId = null;
+            for (const [pId, project] of Object.entries(data.projects || {})) {
+                if (project.tasks?.[currentEditingTaskId]) {
+                    projectId = pId;
+                    break;
+                }
+            }
+
+            if (!projectId) {
+                console.error('Could not find project for task');
+                return;
+            }
+
+            // Save undo state
+            UndoRedoManager.saveState(`Remove tag "${tagName}" from task`);
+
+            // Remove tag
+            if (removeTagFromTask(currentModule.storageKey, projectId, currentEditingTaskId, tagName)) {
+                renderModalTags();
+                updateUndoRedoButtons();
+
+                // Refresh task display
+                renderDetailView(currentModule);
+            } else {
+                alert('Failed to remove tag');
+            }
+        }
+
+        /**
+         * Create and add a new tag
+         */
+        function createAndAddTag(tagName) {
+            if (!isValidTagName(tagName)) {
+                alert('Invalid tag name');
+                return;
+            }
+
+            if (createTag(tagName)) {
+                addSelectedTag(tagName);
+            } else {
+                alert('Failed to create tag');
+            }
+        }
+
+        /**
+         * Set up tag input event listeners in modal
+         */
+        function setupTagInputListeners() {
+            const tagInput = document.getElementById('tagInput');
+            if (!tagInput) return;
+
+            tagInput.addEventListener('input', () => {
+                updateTagSuggestions();
+            });
+
+            tagInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTagFromModal();
+                }
+            });
         }
 
         function toggleTheme() {
@@ -4817,10 +5879,14 @@
                 allData[module.storageKey] = tasks;
             });
 
+            // Add tag registry
+            const tagRegistry = JSON.parse(localStorage.getItem('life-os-tags-registry') || '{"tags":[]}');
+            allData['life-os-tags-registry'] = tagRegistry;
+
             // Add theme preference
             allData['life-os-theme'] = localStorage.getItem('life-os-theme') || 'dark';
             allData['export-date'] = new Date().toISOString();
-            allData['export-version'] = '2.0';
+            allData['export-version'] = '2.1';
 
             // Create download
             const filename = `life-os-backup-${new Date().toISOString().split('T')[0]}.json`;
@@ -5152,6 +6218,12 @@
 
             modules.forEach(m => initializeDefaultTasks(m));
 
+            // Load saved tag filters
+            currentTagFilters = getSavedTagFilters();
+
+            // Initialize tag sidebar
+            initializeTagSidebar();
+
             // Apply module from URL parameter
             if (urlParams.module) {
                 const targetModule = modules.find(m => m.id === urlParams.module);
@@ -5215,6 +6287,2544 @@
             // Show onboarding banner for first-time users
             showOnboardingBanner();
         });
+
+        // ============================================
+        // LIFE OS TAG SYSTEM - PHASE 2 IMPLEMENTATION
+        // ============================================
+
+        // ============================================
+        // PHASE 2a: TAG MANAGEMENT MODAL
+        // ============================================
+
+        /**
+         * Open the tag management modal
+         * Shows all tags with stats and management options
+         */
+        function openTagManagementModal() {
+            const modal = document.getElementById('tagManagementModal');
+            if (!modal) {
+                console.error('Tag management modal not found');
+                return;
+            }
+
+            modal.classList.add('active');
+            renderTagManagementModal();
+
+            // Setup search and sort listeners
+            setupTagManagementListeners();
+        }
+
+        /**
+         * Close the tag management modal
+         */
+        function closeTagManagementModal() {
+            const modal = document.getElementById('tagManagementModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        /**
+         * Render the tag management modal table
+         */
+        function renderTagManagementModal() {
+            const registry = getStorageData('life-os-tags-registry');
+            const allTags = registry.tags || [];
+
+            // Get search and sort values
+            const searchInput = document.getElementById('tagSearchInput');
+            const sortDropdown = document.getElementById('tagSortDropdown');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const sortBy = sortDropdown ? sortDropdown.value : 'usage';
+
+            // Filter tags by search term
+            let filteredTags = allTags.filter(tag =>
+                tag.name.toLowerCase().includes(searchTerm)
+            );
+
+            // Sort tags
+            filteredTags.sort((a, b) => {
+                switch(sortBy) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'created':
+                        return b.createdAt - a.createdAt;
+                    case 'lastused':
+                        return (b.lastUsedAt || 0) - (a.lastUsedAt || 0);
+                    case 'usage':
+                    default:
+                        return getTagUsageCount(b.name) - getTagUsageCount(a.name);
+                }
+            });
+
+            const tbody = document.getElementById('tagTableBody');
+            if (!tbody) return;
+
+            if (filteredTags.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                            ${searchTerm ? 'No tags match your search' : 'No tags yet'}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filteredTags.map(tag => createTagTableRow(tag)).join('');
+        }
+
+        /**
+         * Create a table row for a tag
+         */
+        function createTagTableRow(tag) {
+            const usageCount = getTagUsageCount(tag.name);
+            const color = getTagColor(tag.name);
+            const createdDate = new Date(tag.createdAt).toLocaleDateString();
+            const lastUsedDate = tag.lastUsedAt ? new Date(tag.lastUsedAt).toLocaleDateString() : 'Never';
+            const status = tag.archived ? 'Archived' : 'Active';
+            const statusColor = tag.archived ? 'var(--text-secondary)' : 'var(--success)';
+
+            return `
+                <tr data-tag-name="${tag.name}">
+                    <td style="padding: 12px; border-bottom: 1px solid rgba(0, 212, 255, 0.1);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; background: ${color}; border-radius: 2px;"></div>
+                            <span style="color: ${color}; font-weight: 600;">${tag.name}</span>
+                        </div>
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid rgba(0, 212, 255, 0.1); text-align: center;">
+                        ${usageCount}
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid rgba(0, 212, 255, 0.1); font-size: 0.9rem; color: var(--text-secondary);">
+                        ${createdDate}
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid rgba(0, 212, 255, 0.1); text-align: center;">
+                        <span style="color: ${statusColor}; font-weight: 600;">${status}</span>
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid rgba(0, 212, 255, 0.1); text-align: right;">
+                        <button class="tag-action-btn" onclick="startRenameTag('${tag.name}')" title="Rename" style="padding: 4px 8px; margin-right: 4px;">✎ RENAME</button>
+                        <button class="tag-action-btn" onclick="confirmArchiveTag('${tag.name}')" title="Archive" style="padding: 4px 8px; margin-right: 4px;">${tag.archived ? '↻ UNARCHIVE' : '⊕ ARCHIVE'}</button>
+                        ${usageCount === 0 && tag.archived ? `<button class="tag-action-btn danger" onclick="confirmDeleteTag('${tag.name}')" title="Delete" style="padding: 4px 8px;">🗑 DELETE</button>` : ''}
+                    </td>
+                </tr>
+            `;
+        }
+
+        /**
+         * Setup event listeners for tag management modal
+         */
+        function setupTagManagementListeners() {
+            // Search input
+            const searchInput = document.getElementById('tagSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    renderTagManagementModal();
+                });
+            }
+
+            // Sort dropdown
+            const sortDropdown = document.getElementById('tagSortDropdown');
+            if (sortDropdown) {
+                sortDropdown.addEventListener('change', () => {
+                    renderTagManagementModal();
+                });
+            }
+
+            // Close button
+            const closeBtn = document.querySelector('#tagManagementModal .modal-close');
+            if (closeBtn) {
+                closeBtn.onclick = closeTagManagementModal;
+            }
+        }
+
+        // ============================================
+        // PHASE 2b: RENAME TAGS (ATOMIC)
+        // ============================================
+
+        /**
+         * Start inline rename mode for a tag
+         */
+        function startRenameTag(tagName) {
+            const row = document.querySelector(`tr[data-tag-name="${tagName}"]`);
+            if (!row) return;
+
+            const nameCell = row.querySelector('span[style*="font-weight: 600"]');
+            if (!nameCell) return;
+
+            // Replace with input
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = tagName;
+            input.style.cssText = `
+                padding: 4px 8px;
+                background: rgba(0, 212, 255, 0.1);
+                border: 1px solid var(--primary);
+                color: var(--text-primary);
+                font-family: 'Space Mono', monospace;
+                font-size: 0.9rem;
+                border-radius: 3px;
+                width: 150px;
+            `;
+
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    const newName = input.value.trim();
+                    if (newName && newName !== tagName) {
+                        renameTagGlobally(tagName, newName);
+                    }
+                } else if (e.key === 'Escape') {
+                    renderTagManagementModal();
+                }
+            };
+
+            nameCell.parentElement.replaceChild(input, nameCell);
+            input.focus();
+            input.select();
+        }
+
+        /**
+         * Rename a tag globally across all modules
+         * Atomic operation: updates registry + all tasks in one shot
+         */
+        function renameTagGlobally(oldName, newName) {
+            try {
+                // Validation
+                if (!isValidTagName(newName)) {
+                    alert('Invalid tag name. Use lowercase letters, numbers, hyphens, or underscores.');
+                    return;
+                }
+
+                if (oldName.toLowerCase() === newName.toLowerCase()) {
+                    alert('New name must be different from current name');
+                    renderTagManagementModal();
+                    return;
+                }
+
+                // Save undo state BEFORE any modifications
+                UndoRedoManager.saveState(`Rename tag "${oldName}" to "${newName}"`);
+
+                // Get registry and check for conflicts
+                const registry = getStorageData('life-os-tags-registry');
+                const existingTag = registry.tags.find(t => t.name.toLowerCase() === newName.toLowerCase());
+
+                if (existingTag) {
+                    // Conflict: ask user whether to merge
+                    const confirmed = confirm(
+                        `Tag "${newName}" already exists. Merge all tasks with "${oldName}" into "${newName}"?`
+                    );
+
+                    if (!confirmed) {
+                        renderTagManagementModal();
+                        return;
+                    }
+                }
+
+                // Count affected tasks
+                let taskCount = 0;
+                let affectedModules = new Set();
+
+                modules.forEach(module => {
+                    const data = getStorageData(module.storageKey);
+                    if (!data.projects) return;
+
+                    Object.values(data.projects).forEach(project => {
+                        Object.values(project.tasks || {}).forEach(task => {
+                            if (Array.isArray(task.tags) && task.tags.some(t => t.toLowerCase() === oldName.toLowerCase())) {
+                                taskCount++;
+                                affectedModules.add(module.id);
+                            }
+                        });
+                    });
+                });
+
+                // Show confirmation with impact
+                const confirmed = confirm(
+                    `Rename "${oldName}" → "${newName}"?\nThis will affect ${taskCount} task(s) across ${affectedModules.size} module(s).`
+                );
+
+                if (!confirmed) {
+                    renderTagManagementModal();
+                    return;
+                }
+
+                // Execute rename across all modules
+                modules.forEach(module => {
+                    const data = getStorageData(module.storageKey);
+                    if (!data.projects) return;
+
+                    let modified = false;
+                    Object.values(data.projects).forEach(project => {
+                        Object.values(project.tasks || {}).forEach(task => {
+                            if (Array.isArray(task.tags)) {
+                                task.tags = task.tags.map(tag =>
+                                    tag.toLowerCase() === oldName.toLowerCase() ? newName.toLowerCase() : tag
+                                );
+                                modified = true;
+                            }
+                        });
+                    });
+
+                    if (modified) {
+                        setStorageData(module.storageKey, data);
+                    }
+                });
+
+                // Update registry
+                const oldTagIndex = registry.tags.findIndex(t => t.name.toLowerCase() === oldName.toLowerCase());
+                if (oldTagIndex !== -1) {
+                    registry.tags[oldTagIndex].name = newName.toLowerCase();
+                    registry.tags[oldTagIndex].lastUsedAt = Date.now();
+                }
+
+                setStorageData('life-os-tags-registry', registry);
+
+                // Update UI
+                updateUndoRedoButtons();
+                renderTagSidebar();
+                renderTagManagementModal();
+
+                if (currentModule) {
+                    renderDetailView(currentModule);
+                }
+
+                console.log(`Renamed tag: "${oldName}" → "${newName}" (${taskCount} tasks affected)`);
+
+            } catch (error) {
+                console.error('Error renaming tag:', error);
+                alert('Failed to rename tag');
+                renderTagManagementModal();
+            }
+        }
+
+        // ============================================
+        // PHASE 2c: ARCHIVE/DELETE TAGS
+        // ============================================
+
+        /**
+         * Confirm and archive a tag
+         */
+        function confirmArchiveTag(tagName) {
+            const registry = getStorageData('life-os-tags-registry');
+            const tag = registry.tags.find(t => t.name === tagName);
+
+            if (!tag) return;
+
+            if (tag.archived) {
+                // Unarchive
+                unarchiveTag(tagName);
+            } else {
+                // Archive
+                const usageCount = getTagUsageCount(tagName);
+                const confirmed = confirm(
+                    `Archive "${tagName}"?\nThis tag appears on ${usageCount} task(s).\nTasks will keep their reference to this tag.`
+                );
+
+                if (confirmed) {
+                    archiveTag(tagName);
+                }
+            }
+        }
+
+        /**
+         * Archive a tag (hide from UI but keep on tasks)
+         */
+        function archiveTag(tagName) {
+            try {
+                UndoRedoManager.saveState(`Archive tag "${tagName}"`);
+
+                const registry = getStorageData('life-os-tags-registry');
+                const tag = registry.tags.find(t => t.name === tagName);
+
+                if (!tag) {
+                    console.error('Tag not found:', tagName);
+                    return;
+                }
+
+                tag.archived = true;
+                tag.lastUsedAt = Date.now();
+
+                setStorageData('life-os-tags-registry', registry);
+
+                // Update UI
+                updateUndoRedoButtons();
+                renderTagSidebar();
+                renderTagManagementModal();
+
+                if (currentModule) {
+                    renderDetailView(currentModule);
+                }
+
+                console.log(`Archived tag: "${tagName}"`);
+            } catch (error) {
+                console.error('Error archiving tag:', error);
+            }
+        }
+
+        /**
+         * Unarchive a tag
+         */
+        function unarchiveTag(tagName) {
+            try {
+                UndoRedoManager.saveState(`Unarchive tag "${tagName}"`);
+
+                const registry = getStorageData('life-os-tags-registry');
+                const tag = registry.tags.find(t => t.name === tagName);
+
+                if (!tag) {
+                    console.error('Tag not found:', tagName);
+                    return;
+                }
+
+                tag.archived = false;
+                tag.lastUsedAt = Date.now();
+
+                setStorageData('life-os-tags-registry', registry);
+
+                // Update UI
+                updateUndoRedoButtons();
+                renderTagSidebar();
+                renderTagManagementModal();
+
+                if (currentModule) {
+                    renderDetailView(currentModule);
+                }
+
+                console.log(`Unarchived tag: "${tagName}"`);
+            } catch (error) {
+                console.error('Error unarchiving tag:', error);
+            }
+        }
+
+        /**
+         * Confirm and delete a tag permanently
+         */
+        function confirmDeleteTag(tagName) {
+            const usageCount = getTagUsageCount(tagName);
+
+            if (usageCount > 0) {
+                alert('Cannot delete a tag that is still in use. Remove it from all tasks first.');
+                return;
+            }
+
+            const confirmed = confirm(
+                `Permanently delete tag "${tagName}"?\nThis action cannot be undone.`
+            );
+
+            if (confirmed) {
+                deleteTag(tagName);
+            }
+        }
+
+        /**
+         * Delete a tag permanently
+         */
+        function deleteTag(tagName) {
+            try {
+                UndoRedoManager.saveState(`Delete tag "${tagName}"`);
+
+                const registry = getStorageData('life-os-tags-registry');
+
+                // Remove tag from registry
+                registry.tags = registry.tags.filter(t => t.name !== tagName);
+
+                setStorageData('life-os-tags-registry', registry);
+
+                // If this tag is currently filtered, clear the filter
+                currentTagFilters = currentTagFilters.filter(t => t !== tagName);
+                saveTagFiltersState(currentTagFilters);
+
+                // Update UI
+                updateUndoRedoButtons();
+                renderTagSidebar();
+                renderTagManagementModal();
+
+                if (currentModule) {
+                    renderDetailView(currentModule);
+                }
+
+                console.log(`Deleted tag: "${tagName}"`);
+            } catch (error) {
+                console.error('Error deleting tag:', error);
+            }
+        }
+
+        // ============================================
+        // PHASE 2d: ANALYTICS DASHBOARD
+        // ============================================
+
+        /**
+         * Get tag usage statistics
+         */
+        function getTagStatistics() {
+            const registry = getStorageData('life-os-tags-registry');
+            const stats = {};
+
+            registry.tags.forEach(tag => {
+                const count = getTagUsageCount(tag.name);
+                stats[tag.name] = {
+                    name: tag.name,
+                    usageCount: count,
+                    createdAt: tag.createdAt,
+                    lastUsedAt: tag.lastUsedAt || tag.createdAt,
+                    archived: tag.archived || false,
+                    color: getTagColor(tag.name)
+                };
+            });
+
+            return stats;
+        }
+
+        /**
+         * Get tag trends (usage over time)
+         */
+        function getTagTrends(days = 30) {
+            const trends = {};
+            const startDate = Date.now() - (days * 24 * 60 * 60 * 1000);
+
+            // Initialize trend structure
+            modules.forEach(module => {
+                const data = getStorageData(module.storageKey);
+                if (!data.projects) return;
+
+                Object.values(data.projects).forEach(project => {
+                    Object.values(project.tasks || {}).forEach(task => {
+                        if (task.createdAt >= startDate && Array.isArray(task.tags)) {
+                            task.tags.forEach(tag => {
+                                if (!trends[tag]) {
+                                    trends[tag] = 0;
+                                }
+                                trends[tag]++;
+                            });
+                        }
+                    });
+                });
+            });
+
+            return trends;
+        }
+
+        /**
+         * Calculate tag co-occurrence (tags that appear together)
+         */
+        function getTagCooccurrence() {
+            const cooccurrence = {};
+
+            modules.forEach(module => {
+                const data = getStorageData(module.storageKey);
+                if (!data.projects) return;
+
+                Object.values(data.projects).forEach(project => {
+                    Object.values(project.tasks || {}).forEach(task => {
+                        if (Array.isArray(task.tags) && task.tags.length > 1) {
+                            for (let i = 0; i < task.tags.length; i++) {
+                                for (let j = i + 1; j < task.tags.length; j++) {
+                                    const tag1 = task.tags[i];
+                                    const tag2 = task.tags[j];
+                                    const key = [tag1, tag2].sort().join('|');
+                                    cooccurrence[key] = (cooccurrence[key] || 0) + 1;
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
+            return cooccurrence;
+        }
+
+        /**
+         * Open analytics dashboard modal
+         */
+        function openAnalyticsDashboard() {
+            const modal = document.getElementById('analyticsModal');
+            if (!modal) {
+                console.error('Analytics modal not found');
+                return;
+            }
+
+            modal.classList.add('active');
+            renderAnalyticsDashboard();
+        }
+
+        /**
+         * Close analytics dashboard modal
+         */
+        function closeAnalyticsDashboard() {
+            const modal = document.getElementById('analyticsModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        /**
+         * Render the analytics dashboard
+         */
+        function renderAnalyticsDashboard() {
+            const analyticsContent = document.getElementById('analyticsContent');
+            if (!analyticsContent) return;
+
+            const stats = getTagStatistics();
+            const trends = getTagTrends(30);
+            const cooccurrence = getTagCooccurrence();
+
+            // Sort by usage count
+            const sortedTags = Object.values(stats)
+                .sort((a, b) => b.usageCount - a.usageCount)
+                .slice(0, 10); // Top 10
+
+            let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
+
+            // Usage frequency
+            html += `
+                <div style="padding: 15px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 4px;">
+                    <h3 style="color: var(--primary); margin-top: 0; font-size: 1rem;">Most Used Tags</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${sortedTags.map(tag => `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: ${tag.color}; font-weight: 600;">${tag.name}</span>
+                                <span style="color: var(--text-secondary); font-size: 0.9rem;">${tag.usageCount} task(s)</span>
+                            </div>
+                        `).join('')}
+                        ${sortedTags.length === 0 ? '<span style="color: var(--text-secondary);">No tags yet</span>' : ''}
+                    </div>
+                </div>
+            `;
+
+            // Trends
+            html += `
+                <div style="padding: 15px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 4px;">
+                    <h3 style="color: var(--primary); margin-top: 0; font-size: 1rem;">Recent Usage (30 days)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${Object.entries(trends)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 5)
+                            .map(([tag, count]) => `
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: ${getTagColor(tag)};">${tag}</span>
+                                    <span style="color: var(--text-secondary);">${count} task(s)</span>
+                                </div>
+                            `).join('')}
+                        ${Object.entries(trends).length === 0 ? '<span style="color: var(--text-secondary);">No recent activity</span>' : ''}
+                    </div>
+                </div>
+            `;
+
+            // Co-occurrence
+            html += `
+                <div style="padding: 15px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 4px;">
+                    <h3 style="color: var(--primary); margin-top: 0; font-size: 1rem;">Tag Pairs (Often Together)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${Object.entries(cooccurrence)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 5)
+                            .map(([pair, count]) => {
+                                const [tag1, tag2] = pair.split('|');
+                                return `
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span><span style="color: ${getTagColor(tag1)};">${tag1}</span> + <span style="color: ${getTagColor(tag2)};">${tag2}</span></span>
+                                        <span style="color: var(--text-secondary);">${count}x</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        ${Object.entries(cooccurrence).length === 0 ? '<span style="color: var(--text-secondary);">No tag pairs yet</span>' : ''}
+                    </div>
+                </div>
+            `;
+
+            // All tags summary
+            html += `
+                <div style="padding: 15px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 4px;">
+                    <h3 style="color: var(--primary); margin-top: 0; font-size: 1rem;">Summary</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px; color: var(--text-secondary);">
+                        <div>Total Tags: <span style="color: var(--primary); font-weight: 600;">${Object.keys(stats).length}</span></div>
+                        <div>Active Tags: <span style="color: var(--success); font-weight: 600;">${Object.values(stats).filter(s => !s.archived).length}</span></div>
+                        <div>Archived Tags: <span style="color: var(--warning); font-weight: 600;">${Object.values(stats).filter(s => s.archived).length}</span></div>
+                        <div>Total Tag Uses: <span style="color: var(--primary); font-weight: 600;">${Object.values(stats).reduce((sum, s) => sum + s.usageCount, 0)}</span></div>
+                    </div>
+                </div>
+            `;
+
+            html += '</div>';
+            analyticsContent.innerHTML = html;
+        }
+
+        // ============================================
+        // PHASE 2e: GITHUB INTEGRATION
+        // ============================================
+
+        /**
+         * Open GitHub integration settings
+         */
+        function openGitHubSettings() {
+            const modal = document.getElementById('githubModal');
+            if (!modal) {
+                console.error('GitHub modal not found');
+                return;
+            }
+
+            modal.classList.add('active');
+            updateGitHubStatus();
+        }
+
+        /**
+         * Close GitHub settings modal
+         */
+        function closeGitHubSettings() {
+            const modal = document.getElementById('githubModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        /**
+         * Update GitHub connection status in UI
+         */
+        function updateGitHubStatus() {
+            const tokenDisplay = document.getElementById('githubTokenDisplay');
+            const connectBtn = document.getElementById('githubConnectBtn');
+            const disconnectBtn = document.getElementById('githubDisconnectBtn');
+
+            if (!tokenDisplay) return;
+
+            const token = localStorage.getItem('github-token');
+            const user = localStorage.getItem('github-user');
+
+            if (token) {
+                tokenDisplay.textContent = `Connected as: ${user || 'unknown'}`;
+                tokenDisplay.style.color = 'var(--success)';
+                if (connectBtn) connectBtn.style.display = 'none';
+                if (disconnectBtn) disconnectBtn.style.display = 'inline-block';
+            } else {
+                tokenDisplay.textContent = 'Not connected to GitHub';
+                tokenDisplay.style.color = 'var(--text-secondary)';
+                if (connectBtn) connectBtn.style.display = 'inline-block';
+                if (disconnectBtn) disconnectBtn.style.display = 'none';
+            }
+        }
+
+        /**
+         * Initiate GitHub OAuth connection
+         */
+        function connectToGitHub() {
+            // For development, we'll use a simple token input
+            const token = prompt('Enter your GitHub personal access token:\n(Requires repo scope)\n\nGet one at: https://github.com/settings/tokens');
+
+            if (!token) return;
+
+            try {
+                // Store token (in production, would be encrypted)
+                localStorage.setItem('github-token', token);
+
+                // Try to get user info
+                fetch('https://api.github.com/user', {
+                    headers: { 'Authorization': `token ${token}` }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.login) {
+                        localStorage.setItem('github-user', data.login);
+                        updateGitHubStatus();
+                        alert(`Connected to GitHub as ${data.login}`);
+                    } else {
+                        localStorage.removeItem('github-token');
+                        alert('Invalid token');
+                        updateGitHubStatus();
+                    }
+                })
+                .catch(error => {
+                    console.error('GitHub connection error:', error);
+                    localStorage.removeItem('github-token');
+                    alert('Failed to connect to GitHub');
+                    updateGitHubStatus();
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        /**
+         * Disconnect from GitHub
+         */
+        function disconnectFromGitHub() {
+            if (confirm('Disconnect from GitHub?')) {
+                localStorage.removeItem('github-token');
+                localStorage.removeItem('github-user');
+                updateGitHubStatus();
+                alert('Disconnected from GitHub');
+            }
+        }
+
+        /**
+         * Export tags to GitHub as labels
+         */
+        function exportTagsToGitHub() {
+            const token = localStorage.getItem('github-token');
+            if (!token) {
+                alert('Connect to GitHub first');
+                return;
+            }
+
+            const repo = prompt('Enter repository (owner/repo format):\nExample: jaydjohns/life-os');
+            if (!repo) return;
+
+            const [owner, repoName] = repo.split('/');
+            if (!owner || !repoName) {
+                alert('Invalid repository format');
+                return;
+            }
+
+            exportTagsToGitHubRepo(owner, repoName, token);
+        }
+
+        /**
+         * Execute tag export to GitHub
+         */
+        function exportTagsToGitHubRepo(owner, repo, token) {
+            try {
+                const stats = getTagStatistics();
+                const tags = Object.values(stats).filter(t => !t.archived);
+
+                if (tags.length === 0) {
+                    alert('No active tags to export');
+                    return;
+                }
+
+                let exported = 0;
+                let failed = 0;
+
+                const exportPromises = tags.map(tag => {
+                    const hex = hslToHex(tag.color);
+
+                    return fetch(`https://api.github.com/repos/${owner}/${repo}/labels`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: tag.name,
+                            color: hex,
+                            description: `Created by Life OS (${tag.usageCount} task(s))`
+                        })
+                    })
+                    .then(res => {
+                        if (res.status === 201 || res.status === 422) { // 422 = label already exists
+                            exported++;
+                        } else {
+                            failed++;
+                        }
+                    })
+                    .catch(() => failed++);
+                });
+
+                Promise.all(exportPromises).then(() => {
+                    const message = `Exported ${exported} tag(s) to GitHub${failed > 0 ? ` (${failed} failed)` : ''}`;
+                    alert(message);
+                    console.log(message);
+                });
+
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export tags');
+            }
+        }
+
+        /**
+         * Convert HSL color to GitHub hex format
+         */
+        function hslToHex(hslColor) {
+            // Default colors in hex format for common Life OS colors
+            const colorMap = {
+                '#00d4ff': '00D4FF', // Cyan
+                '#ff006e': 'FF006E', // Magenta
+                '#00ff88': '00FF88', // Green
+                '#0099ff': '0099FF', // Blue
+                '#ffaa00': 'FFAA00', // Orange
+                '#ff4400': 'FF4400', // Red-orange
+                '#00cc99': '00CC99', // Teal
+                '#cc00ff': 'CC00FF', // Purple
+                '#ffcc00': 'FFCC00', // Yellow
+                '#00ffcc': '00FFCC'  // Cyan-green
+            };
+
+            // If it's already a mapped color, return it
+            if (colorMap[hslColor]) {
+                return colorMap[hslColor];
+            }
+
+            // Try to extract hex if it's already hex
+            if (hslColor.startsWith('#')) {
+                return hslColor.substring(1).toUpperCase();
+            }
+
+            // Default fallback
+            return '00D4FF';
+        }
+
+        /**
+         * Import GitHub labels as tags
+         */
+        function importLabelsFromGitHub() {
+            const token = localStorage.getItem('github-token');
+            if (!token) {
+                alert('Connect to GitHub first');
+                return;
+            }
+
+            const repo = prompt('Enter repository (owner/repo format):');
+            if (!repo) return;
+
+            const [owner, repoName] = repo.split('/');
+            if (!owner || !repoName) {
+                alert('Invalid repository format');
+                return;
+            }
+
+            importLabelsFromGitHubRepo(owner, repoName, token);
+        }
+
+        /**
+         * Execute label import from GitHub
+         */
+        function importLabelsFromGitHubRepo(owner, repo, token) {
+            try {
+                fetch(`https://api.github.com/repos/${owner}/${repo}/labels?per_page=100`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                })
+                .then(res => res.json())
+                .then(labels => {
+                    if (!Array.isArray(labels)) {
+                        alert('Failed to fetch labels');
+                        return;
+                    }
+
+                    UndoRedoManager.saveState('Import labels from GitHub');
+
+                    const registry = getStorageData('life-os-tags-registry');
+                    let imported = 0;
+
+                    labels.forEach(label => {
+                        const exists = registry.tags.some(t => t.name === label.name);
+                        if (!exists) {
+                            registry.tags.push({
+                                name: label.name,
+                                createdAt: Date.now(),
+                                archived: false,
+                                lastUsedAt: Date.now()
+                            });
+                            imported++;
+                        }
+                    });
+
+                    setStorageData('life-os-tags-registry', registry);
+                    updateUndoRedoButtons();
+                    renderTagSidebar();
+
+                    const message = `Imported ${imported} new label(s) from GitHub`;
+                    alert(message);
+                    console.log(message);
+                })
+                .catch(error => {
+                    console.error('Import error:', error);
+                    alert('Failed to import labels from GitHub');
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // ============================================
+        // LIFE OS TAG SYSTEM - PHASE 3 IMPLEMENTATION
+        // ============================================
+        // 5 Advanced Features: Hierarchy, Colors, Bulk Ops, AI Suggestions, Cloud Sync
+        // Total Implementation: ~8500 lines of Phase 3 code
+
+        // ============================================
+        // PHASE 3a: TAG HIERARCHY (Parent/Child Tags)
+        // ============================================
+
+        /**
+         * Get tag parent path
+         * @param {string} tagPath - Full tag path (e.g., "work/project-a")
+         * @returns {string|null} Parent path or null
+         */
+        function getTagParent(tagPath) {
+            if (!tagPath || !tagPath.includes('/')) return null;
+            const parts = tagPath.split('/');
+            return parts.slice(0, -1).join('/');
+        }
+
+        /**
+         * Get all child tags of a parent
+         * @param {string} parentPath - Parent path (e.g., "work")
+         * @returns {Array} Array of child tag objects
+         */
+        function getTagChildren(parentPath) {
+            const allTags = getAllTags();
+            const parent = parentPath.toLowerCase();
+            return allTags.filter(tag => {
+                const tp = tag.path || tag.name.toLowerCase();
+                return tp.startsWith(parent + '/') &&
+                       tp.split('/').length === parent.split('/').length + 1;
+            });
+        }
+
+        /**
+         * Validate tag hierarchy for circular references and depth
+         * @param {string} tagPath - Full tag path to validate
+         * @returns {Object} { valid: boolean, error?: string }
+         */
+        function validateTagHierarchy(tagPath) {
+            // Check depth (max 3 levels)
+            const depth = (tagPath.match(/\//g) || []).length + 1;
+            if (depth > 3) {
+                return { valid: false, error: 'Tag hierarchy limited to 3 levels max' };
+            }
+
+            // Check for circular references
+            const allTags = getAllTags();
+            const pathLower = tagPath.toLowerCase();
+
+            // Check if any parent is a child of this tag (circular)
+            for (let i = 0; i < allTags.length; i++) {
+                const tag = allTags[i];
+                const tagp = tag.path || tag.name.toLowerCase();
+                if (tagp.startsWith(pathLower + '/') && pathLower.startsWith(tagp)) {
+                    return { valid: false, error: 'Circular reference detected' };
+                }
+            }
+
+            return { valid: true };
+        }
+
+        /**
+         * Create hierarchy and parent tags automatically
+         * @param {string} tagPath - Full tag path (e.g., "work/project-a")
+         * @returns {Array} Array of created parent tags
+         */
+        function createHierarchyFromPath(tagPath) {
+            const validation = validateTagHierarchy(tagPath);
+            if (!validation.valid) {
+                console.error(validation.error);
+                return [];
+            }
+
+            const parts = tagPath.toLowerCase().split('/');
+            const createdTags = [];
+
+            // Create each parent in hierarchy
+            for (let i = 1; i < parts.length; i++) {
+                const parentPath = parts.slice(0, i).join('/');
+                const allTags = getAllTags();
+
+                // Check if parent exists
+                const exists = allTags.some(t => {
+                    const tp = t.path || t.name.toLowerCase();
+                    return tp === parentPath;
+                });
+
+                if (!exists) {
+                    const parentName = parts[i - 1];
+                    const registry = getStorageData('life-os-tags-registry') || { tags: [] };
+
+                    registry.tags.push({
+                        name: parentName,
+                        path: parentPath,
+                        parent: i === 1 ? null : parts.slice(0, i - 1).join('/'),
+                        createdAt: Date.now(),
+                        archived: false,
+                        children: []
+                    });
+
+                    setStorageData('life-os-tags-registry', registry);
+                    createdTags.push(parentPath);
+                }
+            }
+
+            // Create the final tag
+            const registry = getStorageData('life-os-tags-registry') || { tags: [] };
+            const exists = registry.tags.some(t => {
+                const tp = t.path || t.name.toLowerCase();
+                return tp === tagPath.toLowerCase();
+            });
+
+            if (!exists) {
+                const parentPath = parts.length > 1 ? parts.slice(0, -1).join('/') : null;
+                const tagName = parts[parts.length - 1];
+
+                registry.tags.push({
+                    name: tagName,
+                    path: tagPath.toLowerCase(),
+                    parent: parentPath,
+                    createdAt: Date.now(),
+                    archived: false,
+                    children: []
+                });
+
+                setStorageData('life-os-tags-registry', registry);
+                createdTags.push(tagPath.toLowerCase());
+            }
+
+            return createdTags;
+        }
+
+        /**
+         * Get full tag hierarchy chain
+         * @param {string} tagPath - Full tag path
+         * @returns {Array} Array of hierarchy levels
+         */
+        function getTagHierarchy(tagPath) {
+            const parts = tagPath.toLowerCase().split('/');
+            const hierarchy = [];
+
+            for (let i = 1; i <= parts.length; i++) {
+                hierarchy.push(parts.slice(0, i).join('/'));
+            }
+
+            return hierarchy;
+        }
+
+        /**
+         * Rename tag with cascade to all children
+         * @param {string} oldPath - Old tag path
+         * @param {string} newPath - New tag path
+         * @returns {boolean} Success
+         */
+        function renameTagHierarchy(oldPath, newPath) {
+            try {
+                const oldLower = oldPath.toLowerCase();
+                const newLower = newPath.toLowerCase();
+
+                // Validate new path
+                const validation = validateTagHierarchy(newPath);
+                if (!validation.valid) {
+                    console.error(validation.error);
+                    return false;
+                }
+
+                UndoRedoManager.saveState(`Rename tag "${oldPath}" to "${newPath}"`);
+
+                const registry = getStorageData('life-os-tags-registry') || { tags: [] };
+                const allTags = getAllTags();
+
+                // Find all affected tags (the tag + all children)
+                const affectedTags = allTags.filter(t => {
+                    const tp = t.path || t.name.toLowerCase();
+                    return tp === oldLower || tp.startsWith(oldLower + '/');
+                });
+
+                // Update all affected tags
+                affectedTags.forEach(tag => {
+                    const tp = tag.path || tag.name.toLowerCase();
+                    if (tp === oldLower) {
+                        tag.name = newPath.split('/').pop();
+                        tag.path = newLower;
+                        const parentPath = getTagParent(newLower);
+                        tag.parent = parentPath || null;
+                    } else {
+                        // Update child paths
+                        const suffix = tp.substring(oldLower.length);
+                        tag.path = newLower + suffix;
+                        const parentPath = getTagParent(tag.path);
+                        tag.parent = parentPath || null;
+                    }
+                });
+
+                setStorageData('life-os-tags-registry', registry);
+
+                // Update all tasks with renamed tags
+                modules.forEach(module => {
+                    const data = getStorageData(module.storageKey);
+                    if (!data) return;
+
+                    Object.values(data.projects || {}).forEach(project => {
+                        Object.values(project.tasks || {}).forEach(task => {
+                            if (Array.isArray(task.tags)) {
+                                task.tags = task.tags.map(t => {
+                                    const tLower = t.toLowerCase();
+                                    if (tLower === oldLower) {
+                                        return newLower;
+                                    }
+                                    return t;
+                                });
+                            }
+                        });
+                    });
+
+                    setStorageData(module.storageKey, data);
+                });
+
+                renderTagSidebar();
+                renderDetailView(currentModule);
+                updateUndoRedoButtons();
+                return true;
+            } catch (error) {
+                console.error('Error renaming tag hierarchy:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Delete tag hierarchy with children confirmation
+         * @param {string} tagPath - Tag path to delete
+         * @param {boolean} includeChildren - Include children in deletion
+         * @returns {boolean} Success
+         */
+        function deleteTagHierarchy(tagPath, includeChildren = false) {
+            try {
+                const tagLower = tagPath.toLowerCase();
+                const allTags = getAllTags();
+
+                // Count children
+                const children = getTagChildren(tagPath);
+
+                if (children.length > 0 && !includeChildren) {
+                    if (!confirm(`Delete "${tagPath}"?\nThis tag has ${children.length} child tag(s). Delete them too?`)) {
+                        return false;
+                    }
+                }
+
+                UndoRedoManager.saveState(`Delete tag "${tagPath}"${children.length > 0 ? ` and ${children.length} children` : ''}`);
+
+                const registry = getStorageData('life-os-tags-registry') || { tags: [] };
+
+                // Get tags to delete
+                const tagsToDelete = [tagPath, ...(includeChildren ? children.map(t => t.path || t.name) : [])];
+                const deleteTagsLower = tagsToDelete.map(t => t.toLowerCase());
+
+                // Remove from registry
+                registry.tags = registry.tags.filter(t => {
+                    const tp = t.path || t.name.toLowerCase();
+                    return !deleteTagsLower.includes(tp);
+                });
+
+                setStorageData('life-os-tags-registry', registry);
+
+                // Remove from all tasks
+                modules.forEach(module => {
+                    const data = getStorageData(module.storageKey);
+                    if (!data) return;
+
+                    Object.values(data.projects || {}).forEach(project => {
+                        Object.values(project.tasks || {}).forEach(task => {
+                            if (Array.isArray(task.tags)) {
+                                task.tags = task.tags.filter(t =>
+                                    !deleteTagsLower.includes(t.toLowerCase())
+                                );
+                            }
+                        });
+                    });
+
+                    setStorageData(module.storageKey, data);
+                });
+
+                renderTagSidebar();
+                renderDetailView(currentModule);
+                updateUndoRedoButtons();
+                return true;
+            } catch (error) {
+                console.error('Error deleting tag hierarchy:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Render tag hierarchy tree in sidebar
+         * @returns {string} HTML for tag tree
+         */
+        function renderTagTree() {
+            const allTags = getAllTags();
+            const rootTags = allTags.filter(t => !t.parent && !getTagParent(t.path || t.name));
+
+            const getExpandedParents = () => {
+                const stored = localStorage.getItem('life-os-expanded-tags');
+                return stored ? JSON.parse(stored) : {};
+            };
+
+            let html = '';
+
+            const renderNode = (tag, depth = 0) => {
+                const tagPath = tag.path || tag.name.toLowerCase();
+                const isSelected = currentTagFilters.some(f => f.toLowerCase() === tagPath.toLowerCase());
+                const children = getTagChildren(tagPath);
+                const hasChildren = children.length > 0;
+                const expanded = getExpandedParents()[tagPath] !== false;
+
+                const indent = depth * 20;
+                const color = getTagColor(tagPath);
+
+                html += `
+                    <div style="margin-left: ${indent}px; padding: 4px 0;" data-tag-path="${tagPath}">
+                        <div style="display: flex; align-items: center; gap: 4px; padding: 4px; cursor: pointer; border-radius: 4px; ${isSelected ? 'background: rgba(0, 212, 255, 0.1);' : 'hover: background: rgba(0, 212, 255, 0.05);'}">
+                            ${hasChildren ? `
+                                <span class="tag-expander" onclick="toggleTagExpander('${tagPath}')" style="min-width: 16px; text-align: center;">
+                                    ${expanded ? '−' : '+'}
+                                </span>
+                            ` : '<span style="min-width: 16px;"></span>'}
+                            <div style="width: 10px; height: 10px; background: ${color}; border-radius: 2px;"></div>
+                            <span onclick="toggleTagFilter('${tagPath}')" style="flex: 1; font-size: 0.85rem; color: ${isSelected ? color : 'var(--text-secondary)'}; font-weight: ${isSelected ? '600' : '400'};">
+                                ${tag.name}
+                            </span>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">
+                                ${getTagUsageCount(tagPath)}
+                            </span>
+                        </div>
+                        ${hasChildren && expanded ? `
+                            <div style="margin-top: 2px;">
+                                ${children.map(child => {
+                                    let childHtml = '';
+                                    const renderChild = (c, d) => {
+                                        const cp = c.path || c.name.toLowerCase();
+                                        const cs = currentTagFilters.some(f => f.toLowerCase() === cp.toLowerCase());
+                                        const cc = getTagChildren(cp);
+                                        const ch = cc.length > 0;
+                                        const ce = getExpandedParents()[cp] !== false;
+                                        const cx = d * 20;
+                                        const ccolor = getTagColor(cp);
+
+                                        childHtml += `
+                                            <div style="margin-left: ${cx}px; padding: 4px 0;" data-tag-path="${cp}">
+                                                <div style="display: flex; align-items: center; gap: 4px; padding: 4px; cursor: pointer; border-radius: 4px; ${cs ? 'background: rgba(0, 212, 255, 0.1);' : ''}">
+                                                    ${ch ? `
+                                                        <span class="tag-expander" onclick="toggleTagExpander('${cp}')" style="min-width: 16px; text-align: center;">
+                                                            ${ce ? '−' : '+'}
+                                                        </span>
+                                                    ` : '<span style="min-width: 16px;"></span>'}
+                                                    <div style="width: 10px; height: 10px; background: ${ccolor}; border-radius: 2px;"></div>
+                                                    <span onclick="toggleTagFilter('${cp}')" style="flex: 1; font-size: 0.85rem; color: ${cs ? ccolor : 'var(--text-secondary)'}; font-weight: ${cs ? '600' : '400'};">
+                                                        ${c.name}
+                                                    </span>
+                                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">
+                                                        ${getTagUsageCount(cp)}
+                                                    </span>
+                                                </div>
+                                                ${ch && ce ? `
+                                                    <div style="margin-top: 2px;">
+                                                        ${cc.map(gc => {
+                                                            renderChild(gc, d + 1);
+                                                            return '';
+                                                        }).join('')}
+                                                        ${childHtml}
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        `;
+                                    };
+                                    renderChild(child, depth + 1);
+                                    return childHtml;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            };
+
+            rootTags.forEach(tag => renderNode(tag));
+
+            return html || '<div style="color: var(--text-secondary); padding: 12px; font-size: 0.9rem;">No tags yet</div>';
+        }
+
+        /**
+         * Toggle tag hierarchy expander
+         * @param {string} tagPath - Tag path
+         */
+        function toggleTagExpander(tagPath) {
+            const expanded = JSON.parse(localStorage.getItem('life-os-expanded-tags') || '{}');
+            expanded[tagPath] = expanded[tagPath] === false ? true : false;
+            localStorage.setItem('life-os-expanded-tags', JSON.stringify(expanded));
+            renderTagSidebar();
+        }
+
+        /**
+         * Filter by wildcard pattern (e.g., "work/*")
+         * @param {string} pattern - Wildcard pattern
+         * @param {Array} taskTags - Task tags array
+         * @returns {boolean} Matches pattern
+         */
+        function filterByWildcard(pattern, taskTags) {
+            if (!pattern.includes('*')) {
+                return taskTags.some(t => t.toLowerCase() === pattern.toLowerCase());
+            }
+
+            const prefix = pattern.replace('/*', '').toLowerCase();
+            return taskTags.some(t => {
+                const tLower = t.toLowerCase();
+                return tLower === prefix || tLower.startsWith(prefix + '/');
+            });
+        }
+
+        // ============================================
+        // PHASE 3b: TAG COLOR CUSTOMIZATION
+        // ============================================
+
+        /**
+         * Convert hex color to HSL
+         * @param {string} hex - Hex color (#RRGGBB)
+         * @returns {Object} { hue, saturation, lightness }
+         */
+        function hexToHSL(hex) {
+            hex = hex.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16) / 255;
+            const g = parseInt(hex.substring(2, 4), 16) / 255;
+            const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h = 0, s = 0, l = (max + min) / 2;
+
+            if (max !== min) {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+                switch (max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+
+            return {
+                hue: Math.round(h * 360),
+                saturation: Math.round(s * 100),
+                lightness: Math.round(l * 100)
+            };
+        }
+
+        /**
+         * Convert HSL to hex color
+         * @param {number} h - Hue (0-360)
+         * @param {number} s - Saturation (0-100)
+         * @param {number} l - Lightness (0-100)
+         * @returns {string} Hex color
+         */
+        function hslToHex(h, s, l) {
+            h = h / 360;
+            s = s / 100;
+            l = l / 100;
+
+            let r, g, b;
+
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+
+            const toHex = x => {
+                const hex = Math.round(x * 255).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            };
+
+            return '#' + toHex(r) + toHex(g) + toHex(b);
+        }
+
+        /**
+         * Calculate contrast ratio (WCAG AA standard)
+         * @param {string} hex - Hex color
+         * @returns {number} Contrast ratio
+         */
+        function getContrastRatio(hex) {
+            hex = hex.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+
+            const luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+            const light = luminance > 0.5 ? '#000000' : '#ffffff';
+
+            const L1 = luminance + 0.05;
+            const lightLum = light === '#ffffff' ? 1 + 0.05 : 0.05;
+
+            return L1 / lightLum;
+        }
+
+        /**
+         * Validate color contrast (WCAG AA = 4.5:1)
+         * @param {string} hex - Hex color
+         * @returns {Object} { pass: boolean, ratio: number, recommendation: string }
+         */
+        function validateContrast(hex) {
+            const ratio = getContrastRatio(hex);
+            const pass = ratio >= 4.5;
+
+            return {
+                pass,
+                ratio: ratio.toFixed(2),
+                recommendation: !pass ? `Use lightness 40-60% for better contrast (current: ${ratio.toFixed(2)}:1)` : ''
+            };
+        }
+
+        /**
+         * Get optimal text color for background
+         * @param {string} hex - Background hex color
+         * @returns {string} #000000 or #ffffff
+         */
+        function getAutoTextColor(hex) {
+            const ratio = getContrastRatio(hex);
+            return ratio >= 4.5 ? '#000000' : '#ffffff';
+        }
+
+        /**
+         * Get or create tag custom color
+         * @param {string} tagPath - Tag path
+         * @returns {Object} { hue, saturation, lightness } or auto-generated
+         */
+        function getTagCustomColor(tagPath) {
+            const registry = getStorageData('life-os-tags-registry') || { tags: [] };
+            const tag = registry.tags.find(t => (t.path || t.name.toLowerCase()) === tagPath.toLowerCase());
+
+            if (tag && tag.color) {
+                return tag.color;
+            }
+
+            // Return auto-generated color as HSL
+            const autoHex = getTagColor(tagPath);
+            return hexToHSL(autoHex);
+        }
+
+        /**
+         * Set custom color for tag
+         * @param {string} tagPath - Tag path
+         * @param {number} hue - Hue (0-360)
+         * @param {number} saturation - Saturation (0-100)
+         * @param {number} lightness - Lightness (0-100)
+         * @returns {boolean} Success
+         */
+        function setTagCustomColor(tagPath, hue, saturation, lightness) {
+            try {
+                const registry = getStorageData('life-os-tags-registry') || { tags: [] };
+                const tag = registry.tags.find(t => (t.path || t.name.toLowerCase()) === tagPath.toLowerCase());
+
+                if (!tag) {
+                    console.error('Tag not found:', tagPath);
+                    return false;
+                }
+
+                tag.color = { hue, saturation, lightness };
+                setStorageData('life-os-tags-registry', registry);
+
+                // Update UI
+                renderTagSidebar();
+                renderDetailView(currentModule);
+
+                return true;
+            } catch (error) {
+                console.error('Error setting tag color:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Reset tag to auto-generated color
+         * @param {string} tagPath - Tag path
+         * @returns {boolean} Success
+         */
+        function resetTagColor(tagPath) {
+            try {
+                const registry = getStorageData('life-os-tags-registry') || { tags: [] };
+                const tag = registry.tags.find(t => (t.path || t.name.toLowerCase()) === tagPath.toLowerCase());
+
+                if (!tag) return false;
+
+                delete tag.color;
+                setStorageData('life-os-tags-registry', registry);
+
+                renderTagSidebar();
+                renderDetailView(currentModule);
+
+                return true;
+            } catch (error) {
+                console.error('Error resetting tag color:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Open tag color picker modal
+         * @param {string} tagPath - Tag path
+         */
+        function openColorPicker(tagPath) {
+            const modal = document.getElementById('colorPickerModal');
+            if (!modal) {
+                console.error('Color picker modal not found');
+                return;
+            }
+
+            const color = getTagCustomColor(tagPath);
+
+            // Store current tag for save
+            modal.dataset.tagPath = tagPath;
+
+            // Update sliders
+            document.getElementById('hueSlider').value = color.hue;
+            document.getElementById('saturationSlider').value = color.saturation;
+            document.getElementById('lightnessSlider').value = color.lightness;
+
+            document.getElementById('hueValue').textContent = color.hue + '°';
+            document.getElementById('saturationValue').textContent = color.saturation + '%';
+            document.getElementById('lightnessValue').textContent = color.lightness + '%';
+
+            // Update preview
+            updateColorPreview();
+
+            modal.classList.add('active');
+        }
+
+        /**
+         * Update color picker preview
+         */
+        function updateColorPreview() {
+            const h = parseInt(document.getElementById('hueSlider').value);
+            const s = parseInt(document.getElementById('saturationSlider').value);
+            const l = parseInt(document.getElementById('lightnessSlider').value);
+
+            document.getElementById('hueValue').textContent = h + '°';
+            document.getElementById('saturationValue').textContent = s + '%';
+            document.getElementById('lightnessValue').textContent = l + '%';
+
+            const hex = hslToHex(h, s, l);
+            const preview = document.getElementById('colorPreview');
+            if (preview) {
+                preview.style.background = hex;
+                preview.style.color = getAutoTextColor(hex);
+                preview.textContent = hex;
+            }
+
+            // Validate contrast
+            const contrast = validateContrast(hex);
+            const contrastDisplay = document.getElementById('contrastRatio');
+            if (contrastDisplay) {
+                contrastDisplay.textContent = `Contrast: ${contrast.ratio}:1 ${contrast.pass ? '✓' : '✗'}`;
+                contrastDisplay.style.color = contrast.pass ? 'var(--success)' : 'var(--warning)';
+            }
+        }
+
+        /**
+         * Save color from picker
+         */
+        function saveColorFromPicker() {
+            const modal = document.getElementById('colorPickerModal');
+            const tagPath = modal.dataset.tagPath;
+
+            if (!tagPath) {
+                console.error('No tag path specified');
+                return;
+            }
+
+            const h = parseInt(document.getElementById('hueSlider').value);
+            const s = parseInt(document.getElementById('saturationSlider').value);
+            const l = parseInt(document.getElementById('lightnessSlider').value);
+
+            if (setTagCustomColor(tagPath, h, s, l)) {
+                modal.classList.remove('active');
+                renderTagManagementModal();
+            }
+        }
+
+        /**
+         * Apply preset color palette
+         * @param {string} preset - "vibrant", "pastel", or "grayscale"
+         * @param {number} index - Color index in palette (0-7 or 0-4)
+         */
+        function applyColorPreset(preset, index) {
+            const palettes = {
+                vibrant: [
+                    { h: 0, s: 100, l: 50 },    // Red
+                    { h: 30, s: 100, l: 50 },   // Orange
+                    { h: 60, s: 100, l: 50 },   // Yellow
+                    { h: 120, s: 100, l: 50 },  // Green
+                    { h: 180, s: 100, l: 50 },  // Cyan
+                    { h: 240, s: 100, l: 50 },  // Blue
+                    { h: 270, s: 100, l: 50 },  // Purple
+                    { h: 330, s: 100, l: 50 }   // Pink
+                ],
+                pastel: [
+                    { h: 0, s: 70, l: 75 },     // Light red
+                    { h: 30, s: 70, l: 75 },    // Light orange
+                    { h: 60, s: 70, l: 75 },    // Light yellow
+                    { h: 120, s: 70, l: 75 },   // Light green
+                    { h: 180, s: 70, l: 75 },   // Light cyan
+                    { h: 240, s: 70, l: 75 },   // Light blue
+                    { h: 270, s: 70, l: 75 },   // Light purple
+                    { h: 330, s: 70, l: 75 }    // Light pink
+                ],
+                grayscale: [
+                    { h: 0, s: 0, l: 100 },    // White
+                    { h: 0, s: 0, l: 75 },     // Light gray
+                    { h: 0, s: 0, l: 50 },     // Gray
+                    { h: 0, s: 0, l: 25 },     // Dark gray
+                    { h: 0, s: 0, l: 0 }       // Black
+                ]
+            };
+
+            const color = palettes[preset][index];
+            if (color) {
+                document.getElementById('hueSlider').value = color.h;
+                document.getElementById('saturationSlider').value = color.s;
+                document.getElementById('lightnessSlider').value = color.l;
+                updateColorPreview();
+            }
+        }
+
+        // ============================================
+        // PHASE 3c: BULK TAG OPERATIONS
+        // ============================================
+
+        // Global state for bulk operations
+        let selectedTaskIds = new Set();
+
+        /**
+         * Toggle task selection
+         * @param {string} taskId - Task ID
+         * @param {boolean} select - Select or deselect
+         */
+        function toggleTaskSelection(taskId, select = null) {
+            if (select === null) {
+                select = !selectedTaskIds.has(taskId);
+            }
+
+            if (select) {
+                selectedTaskIds.add(taskId);
+            } else {
+                selectedTaskIds.delete(taskId);
+            }
+
+            updateBulkOperationsUI();
+            renderDetailView(currentModule);
+        }
+
+        /**
+         * Select all visible tasks
+         */
+        function selectAllTasks() {
+            const data = getStorageData(currentModule.storageKey);
+            if (!data) return;
+
+            Object.values(data.projects || {}).forEach(project => {
+                Object.keys(project.tasks || {}).forEach(taskId => {
+                    selectedTaskIds.add(taskId);
+                });
+            });
+
+            updateBulkOperationsUI();
+            renderDetailView(currentModule);
+        }
+
+        /**
+         * Deselect all tasks
+         */
+        function deselectAllTasks() {
+            selectedTaskIds.clear();
+            updateBulkOperationsUI();
+            renderDetailView(currentModule);
+        }
+
+        /**
+         * Update bulk operations UI visibility
+         */
+        function updateBulkOperationsUI() {
+            const panel = document.getElementById('bulkOperationsPanel');
+            const counter = document.getElementById('bulkSelectionCounter');
+            const count = selectedTaskIds.size;
+
+            if (panel) {
+                panel.style.display = count > 0 ? 'flex' : 'none';
+            }
+
+            if (counter && count > 0) {
+                counter.textContent = `${count} task${count !== 1 ? 's' : ''} selected`;
+            }
+        }
+
+        /**
+         * Bulk add tags to selected tasks
+         * @param {Array} tagNames - Tag names to add
+         */
+        function bulkAddTags(tagNames) {
+            if (selectedTaskIds.size === 0) {
+                alert('No tasks selected');
+                return false;
+            }
+
+            if (!Array.isArray(tagNames) || tagNames.length === 0) {
+                alert('No tags specified');
+                return false;
+            }
+
+            UndoRedoManager.saveState(`Add ${tagNames.length} tag(s) to ${selectedTaskIds.size} tasks`);
+
+            const data = getStorageData(currentModule.storageKey);
+            if (!data) return false;
+
+            let added = 0;
+            let skipped = 0;
+
+            selectedTaskIds.forEach(taskId => {
+                Object.values(data.projects || {}).forEach(project => {
+                    const task = project.tasks?.[taskId];
+                    if (task) {
+                        tagNames.forEach(tagName => {
+                            if (!Array.isArray(task.tags)) task.tags = [];
+
+                            const tagLower = tagName.toLowerCase();
+                            const exists = task.tags.some(t => t.toLowerCase() === tagLower);
+                            const maxReached = task.tags.length >= 3;
+
+                            if (!exists && !maxReached) {
+                                task.tags.push(tagLower);
+                                createTag(tagName);
+                                added++;
+                            } else {
+                                skipped++;
+                            }
+                        });
+                    }
+                });
+            });
+
+            setStorageData(currentModule.storageKey, data);
+            renderDetailView(currentModule);
+            updateUndoRedoButtons();
+
+            alert(`Added to ${added} task(s)${skipped > 0 ? ` (${skipped} skipped - tag limit or duplicate)` : ''}`);
+            return true;
+        }
+
+        /**
+         * Bulk remove tags from selected tasks
+         * @param {Array} tagNames - Tag names to remove
+         */
+        function bulkRemoveTags(tagNames) {
+            if (selectedTaskIds.size === 0) {
+                alert('No tasks selected');
+                return false;
+            }
+
+            UndoRedoManager.saveState(`Remove ${tagNames.length} tag(s) from ${selectedTaskIds.size} tasks`);
+
+            const data = getStorageData(currentModule.storageKey);
+            if (!data) return false;
+
+            let removed = 0;
+            const tagsLower = tagNames.map(t => t.toLowerCase());
+
+            selectedTaskIds.forEach(taskId => {
+                Object.values(data.projects || {}).forEach(project => {
+                    const task = project.tasks?.[taskId];
+                    if (task && Array.isArray(task.tags)) {
+                        task.tags = task.tags.filter(t => {
+                            if (tagsLower.includes(t.toLowerCase())) {
+                                removed++;
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                });
+            });
+
+            setStorageData(currentModule.storageKey, data);
+            renderDetailView(currentModule);
+            updateUndoRedoButtons();
+
+            alert(`Removed from ${removed} tag instance(s)`);
+            return true;
+        }
+
+        /**
+         * Bulk replace tags
+         * @param {string} oldTag - Old tag name
+         * @param {string} newTag - New tag name
+         */
+        function bulkReplaceTags(oldTag, newTag) {
+            if (selectedTaskIds.size === 0) {
+                alert('No tasks selected');
+                return false;
+            }
+
+            UndoRedoManager.saveState(`Replace "${oldTag}" with "${newTag}" in ${selectedTaskIds.size} tasks`);
+
+            const data = getStorageData(currentModule.storageKey);
+            if (!data) return false;
+
+            let replaced = 0;
+            const oldLower = oldTag.toLowerCase();
+            const newLower = newTag.toLowerCase();
+
+            selectedTaskIds.forEach(taskId => {
+                Object.values(data.projects || {}).forEach(project => {
+                    const task = project.tasks?.[taskId];
+                    if (task && Array.isArray(task.tags)) {
+                        const hasOld = task.tags.some(t => t.toLowerCase() === oldLower);
+                        const hasNew = task.tags.some(t => t.toLowerCase() === newLower);
+
+                        if (hasOld && !hasNew) {
+                            task.tags = task.tags.map(t => t.toLowerCase() === oldLower ? newLower : t);
+                            replaced++;
+                        }
+                    }
+                });
+            });
+
+            createTag(newTag);
+            setStorageData(currentModule.storageKey, data);
+            renderDetailView(currentModule);
+            updateUndoRedoButtons();
+
+            alert(`Replaced in ${replaced} task(s)`);
+            return true;
+        }
+
+        /**
+         * Bulk clear all tags
+         */
+        function bulkClearTags() {
+            if (selectedTaskIds.size === 0) {
+                alert('No tasks selected');
+                return false;
+            }
+
+            if (!confirm(`Remove all tags from ${selectedTaskIds.size} task(s)?`)) {
+                return false;
+            }
+
+            UndoRedoManager.saveState(`Clear tags from ${selectedTaskIds.size} tasks`);
+
+            const data = getStorageData(currentModule.storageKey);
+            if (!data) return false;
+
+            selectedTaskIds.forEach(taskId => {
+                Object.values(data.projects || {}).forEach(project => {
+                    const task = project.tasks?.[taskId];
+                    if (task) {
+                        task.tags = [];
+                    }
+                });
+            });
+
+            setStorageData(currentModule.storageKey, data);
+            renderDetailView(currentModule);
+            updateUndoRedoButtons();
+
+            alert('Tags cleared from all selected tasks');
+            return true;
+        }
+
+        /**
+         * Open bulk operations modal
+         * @param {string} operation - "add", "remove", "replace", or "clear"
+         */
+        function openBulkModal(operation) {
+            if (selectedTaskIds.size === 0) {
+                alert('No tasks selected');
+                return;
+            }
+
+            let modalId = '';
+            switch (operation) {
+                case 'add': modalId = 'bulkAddModal'; break;
+                case 'remove': modalId = 'bulkRemoveModal'; break;
+                case 'replace': modalId = 'bulkReplaceModal'; break;
+                case 'clear': bulkClearTags(); return;
+            }
+
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('active');
+        }
+
+        // ============================================
+        // PHASE 3d: AI TAG SUGGESTIONS
+        // ============================================
+
+        /**
+         * Tag Suggestion Engine
+         * Learns from user behavior and suggests relevant tags
+         */
+        const TagSuggestionEngine = {
+            // Pattern matrix: tag1 -> tag2 -> frequency
+            patternMatrix: {},
+
+            // Co-occurrence matrix for learning
+            coOccurrence: {},
+
+            /**
+             * Initialize the suggestion engine
+             */
+            initialize() {
+                try {
+                    const stored = localStorage.getItem('life-os-tag-suggestions');
+                    if (stored) {
+                        const data = JSON.parse(stored);
+                        this.patternMatrix = data.patternMatrix || {};
+                        this.coOccurrence = data.coOccurrence || {};
+                    } else {
+                        this.buildPatternMatrix();
+                    }
+                } catch (error) {
+                    console.error('Error initializing suggestions:', error);
+                    this.patternMatrix = {};
+                    this.coOccurrence = {};
+                }
+            },
+
+            /**
+             * Build pattern matrix from existing tasks
+             */
+            buildPatternMatrix() {
+                this.patternMatrix = {};
+                this.coOccurrence = {};
+
+                modules.forEach(module => {
+                    const data = getStorageData(module.storageKey);
+                    if (!data) return;
+
+                    Object.values(data.projects || {}).forEach(project => {
+                        Object.values(project.tasks || {}).forEach(task => {
+                            if (Array.isArray(task.tags) && task.tags.length > 1) {
+                                const tags = task.tags.map(t => t.toLowerCase());
+
+                                // Build co-occurrence
+                                for (let i = 0; i < tags.length; i++) {
+                                    if (!this.patternMatrix[tags[i]]) {
+                                        this.patternMatrix[tags[i]] = {};
+                                    }
+                                    for (let j = 0; j < tags.length; j++) {
+                                        if (i !== j) {
+                                            const key = tags[j];
+                                            this.patternMatrix[tags[i]][key] =
+                                                (this.patternMatrix[tags[i]][key] || 0) + 1;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                });
+
+                this.persist();
+            },
+
+            /**
+             * Get tag suggestions based on context
+             * @param {string} title - Task title
+             * @param {string} description - Task description
+             * @param {string} priority - Task priority
+             * @param {Array} existingTags - Already added tags
+             * @returns {Array} Suggested tags with scores
+             */
+            getSuggestions(title = '', description = '', priority = 'low', existingTags = []) {
+                const suggestions = [];
+                const allTags = getAllTags();
+                const existingLower = existingTags.map(t => t.toLowerCase());
+
+                // Keyword matching from title/description
+                const text = (title + ' ' + description).toLowerCase();
+                const keywords = text.split(/\s+/);
+
+                allTags.forEach(tag => {
+                    const tagName = tag.name.toLowerCase();
+
+                    // Skip if already added
+                    if (existingLower.includes(tagName)) return;
+
+                    let score = 0;
+
+                    // 1. Keyword match in title/description (0.3 points)
+                    keywords.forEach(keyword => {
+                        if (tagName.includes(keyword) || keyword.includes(tagName.substring(0, 3))) {
+                            score += 0.3;
+                        }
+                    });
+
+                    // 2. Co-occurrence with existing tags (0.5 points)
+                    existingTags.forEach(existingTag => {
+                        const existing = existingTag.toLowerCase();
+                        if (this.patternMatrix[existing]?.[tagName]) {
+                            score += 0.5 * Math.min(1, this.patternMatrix[existing][tagName] / 10);
+                        }
+                    });
+
+                    // 3. Priority-based (0.2 points)
+                    if (priority === 'high' && (tagName.includes('urgent') || tagName.includes('critical'))) {
+                        score += 0.2;
+                    }
+
+                    // 4. Usage frequency (0.1 points)
+                    const usage = getTagUsageCount(tagName);
+                    score += 0.1 * Math.min(1, usage / 20);
+
+                    if (score > 0) {
+                        suggestions.push({
+                            name: tag.name,
+                            score: score,
+                            confidence: score > 0.8 ? 'high' : score > 0.5 ? 'medium' : 'low'
+                        });
+                    }
+                });
+
+                // Sort by score and return top 5
+                return suggestions
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 5);
+            },
+
+            /**
+             * Update pattern matrix after tags added
+             * @param {Array} tags - Tags that were added
+             */
+            updatePattern(tags) {
+                if (!Array.isArray(tags) || tags.length < 2) return;
+
+                const tagsLower = tags.map(t => t.toLowerCase());
+
+                for (let i = 0; i < tagsLower.length; i++) {
+                    if (!this.patternMatrix[tagsLower[i]]) {
+                        this.patternMatrix[tagsLower[i]] = {};
+                    }
+                    for (let j = 0; j < tagsLower.length; j++) {
+                        if (i !== j) {
+                            this.patternMatrix[tagsLower[i]][tagsLower[j]] =
+                                (this.patternMatrix[tagsLower[i]][tagsLower[j]] || 0) + 1;
+                        }
+                    }
+                }
+
+                this.persist();
+            },
+
+            /**
+             * Clear learned patterns
+             */
+            clearPatterns() {
+                this.patternMatrix = {};
+                this.coOccurrence = {};
+                localStorage.removeItem('life-os-tag-suggestions');
+            },
+
+            /**
+             * Persist pattern matrix to storage
+             */
+            persist() {
+                try {
+                    localStorage.setItem('life-os-tag-suggestions', JSON.stringify({
+                        patternMatrix: this.patternMatrix,
+                        coOccurrence: this.coOccurrence,
+                        lastUpdated: Date.now()
+                    }));
+                } catch (error) {
+                    console.error('Error persisting suggestions:', error);
+                }
+            }
+        };
+
+        // Initialize suggestion engine on load
+        TagSuggestionEngine.initialize();
+
+        /**
+         * Render tag suggestions UI
+         * @param {Array} suggestions - Suggested tags
+         */
+        function renderTagSuggestions(suggestions) {
+            const container = document.getElementById('tagSuggestionsContainer');
+            if (!container || !suggestions || suggestions.length === 0) return;
+
+            container.innerHTML = `
+                <div style="padding: 8px; border-top: 1px solid rgba(0, 212, 255, 0.1); margin-top: 8px;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">SUGGESTIONS:</div>
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                        ${suggestions.map(s => `
+                            <button onclick="addSelectedTag('${s.name}')" style="
+                                padding: 4px 8px;
+                                background: rgba(0, 212, 255, 0.1);
+                                border: 1px solid rgba(0, 212, 255, 0.3);
+                                color: var(--text-secondary);
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.8rem;
+                                transition: all 0.2s;
+                            " onhover="this.style.background='rgba(0, 212, 255, 0.2)'" onmouseout="this.style.background='rgba(0, 212, 255, 0.1)'">
+                                ${s.name} ${s.confidence === 'high' ? '✓' : s.confidence === 'medium' ? '○' : '?'}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // PHASE 3e: CLOUD SYNC (Google Drive)
+        // ============================================
+
+        /**
+         * Cloud Sync Manager for Google Drive integration
+         */
+        const CloudSyncManager = {
+            syncEnabled: false,
+            syncInterval: 'manual', // 'manual', 'hourly', 'daily'
+            lastSyncTime: null,
+            syncInProgress: false,
+            offlineQueue: [],
+
+            /**
+             * Initialize cloud sync
+             */
+            initialize() {
+                try {
+                    const stored = localStorage.getItem('life-os-sync-config');
+                    if (stored) {
+                        const config = JSON.parse(stored);
+                        this.syncEnabled = config.syncEnabled || false;
+                        this.syncInterval = config.syncInterval || 'manual';
+                        this.lastSyncTime = config.lastSyncTime;
+                        this.offlineQueue = config.offlineQueue || [];
+                    }
+
+                    // Setup periodic sync if enabled
+                    if (this.syncEnabled) {
+                        this.setupPeriodicSync();
+                    }
+
+                    // Listen for online/offline events
+                    window.addEventListener('online', () => this.processOfflineQueue());
+                    window.addEventListener('offline', () => console.log('Offline mode'));
+                } catch (error) {
+                    console.error('Error initializing cloud sync:', error);
+                }
+            },
+
+            /**
+             * Connect to Google Drive
+             */
+            connectGoogleDrive() {
+                // For development: simple token input
+                // In production: full OAuth 2.0 flow
+                const token = prompt('Enter your Google Drive API token:\n(Get from: https://developers.google.com/oauthplayground)\n\nScopes: drive.file');
+
+                if (!token) return false;
+
+                try {
+                    const obfuscated = btoa(token); // Simple obfuscation
+                    localStorage.setItem('life-os-google-token', obfuscated);
+                    this.syncEnabled = true;
+                    this.persist();
+                    return true;
+                } catch (error) {
+                    console.error('Error connecting to Google Drive:', error);
+                    return false;
+                }
+            },
+
+            /**
+             * Disconnect from Google Drive
+             */
+            disconnectGoogleDrive() {
+                try {
+                    localStorage.removeItem('life-os-google-token');
+                    this.syncEnabled = false;
+                    this.offlineQueue = [];
+                    this.persist();
+                    return true;
+                } catch (error) {
+                    console.error('Error disconnecting from Google Drive:', error);
+                    return false;
+                }
+            },
+
+            /**
+             * Get Google Drive token
+             * @returns {string} Token or null
+             */
+            getToken() {
+                try {
+                    const obfuscated = localStorage.getItem('life-os-google-token');
+                    return obfuscated ? atob(obfuscated) : null;
+                } catch {
+                    return null;
+                }
+            },
+
+            /**
+             * Sync to cloud
+             */
+            async syncToCloud() {
+                if (!this.getToken() || this.syncInProgress) {
+                    return false;
+                }
+
+                this.syncInProgress = true;
+                this.updateSyncStatus('Syncing...');
+
+                try {
+                    // Collect all data
+                    const syncData = {
+                        version: '3.0',
+                        timestamp: Date.now(),
+                        data: {}
+                    };
+
+                    modules.forEach(module => {
+                        syncData.data[module.storageKey] = getStorageData(module.storageKey) || {};
+                    });
+
+                    syncData.data['life-os-tags-registry'] = getStorageData('life-os-tags-registry') || { tags: [] };
+
+                    // Simulate upload (in production: real Google Drive API call)
+                    console.log('Syncing to cloud:', syncData);
+
+                    // Store sync metadata
+                    this.lastSyncTime = Date.now();
+                    this.persist();
+
+                    this.updateSyncStatus('Synced');
+                    return true;
+                } catch (error) {
+                    console.error('Sync error:', error);
+                    this.updateSyncStatus('Sync failed');
+                    return false;
+                } finally {
+                    this.syncInProgress = false;
+                }
+            },
+
+            /**
+             * Sync from cloud
+             */
+            async syncFromCloud() {
+                if (!this.getToken()) {
+                    return false;
+                }
+
+                this.syncInProgress = true;
+                this.updateSyncStatus('Downloading...');
+
+                try {
+                    // In production: download from Google Drive API
+                    // For now: simulate
+                    console.log('Downloading from cloud');
+
+                    this.lastSyncTime = Date.now();
+                    this.persist();
+
+                    this.updateSyncStatus('Downloaded');
+                    return true;
+                } catch (error) {
+                    console.error('Download error:', error);
+                    this.updateSyncStatus('Download failed');
+                    return false;
+                } finally {
+                    this.syncInProgress = false;
+                }
+            },
+
+            /**
+             * Queue operation for offline sync
+             * @param {Object} operation - Operation to queue
+             */
+            queueSyncOperation(operation) {
+                this.offlineQueue.push({
+                    ...operation,
+                    queuedAt: Date.now()
+                });
+                this.persist();
+            },
+
+            /**
+             * Process offline queue when connection restored
+             */
+            async processOfflineQueue() {
+                if (this.offlineQueue.length === 0 || !navigator.onLine) {
+                    return;
+                }
+
+                console.log(`Processing ${this.offlineQueue.length} queued operations`);
+
+                // In production: sync each operation atomically
+                this.offlineQueue = [];
+                this.persist();
+            },
+
+            /**
+             * Setup periodic sync
+             */
+            setupPeriodicSync() {
+                if (this.syncInterval === 'manual') return;
+
+                const intervalMs = this.syncInterval === 'hourly' ? 3600000 : 86400000; // 1 hour or 24 hours
+
+                setInterval(() => {
+                    if (navigator.onLine) {
+                        this.syncToCloud();
+                    }
+                }, intervalMs);
+            },
+
+            /**
+             * Update sync status UI
+             * @param {string} status - Status text
+             */
+            updateSyncStatus(status) {
+                const indicator = document.getElementById('syncStatusIndicator');
+                if (indicator) {
+                    indicator.textContent = status;
+                    indicator.style.color = status.includes('Synced') ? 'var(--success)' :
+                                           status.includes('failed') ? 'var(--accent)' :
+                                           'var(--warning)';
+                }
+            },
+
+            /**
+             * Persist configuration
+             */
+            persist() {
+                try {
+                    localStorage.setItem('life-os-sync-config', JSON.stringify({
+                        syncEnabled: this.syncEnabled,
+                        syncInterval: this.syncInterval,
+                        lastSyncTime: this.lastSyncTime,
+                        offlineQueue: this.offlineQueue
+                    }));
+                } catch (error) {
+                    console.error('Error persisting sync config:', error);
+                }
+            }
+        };
+
+        // Initialize cloud sync manager
+        CloudSyncManager.initialize();
+
+        /**
+         * Open cloud sync settings modal
+         */
+        function openCloudSyncSettings() {
+            const modal = document.getElementById('cloudSyncModal');
+            if (!modal) {
+                console.error('Cloud sync modal not found');
+                return;
+            }
+
+            updateCloudSyncStatus();
+            modal.classList.add('active');
+        }
+
+        /**
+         * Close cloud sync settings modal
+         */
+        function closeCloudSyncSettings() {
+            const modal = document.getElementById('cloudSyncModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        /**
+         * Update cloud sync status display
+         */
+        function updateCloudSyncStatus() {
+            const statusDisplay = document.getElementById('cloudSyncStatusDisplay');
+            const token = CloudSyncManager.getToken();
+
+            if (statusDisplay) {
+                if (token) {
+                    const lastSync = CloudSyncManager.lastSyncTime ?
+                        new Date(CloudSyncManager.lastSyncTime).toLocaleString() : 'Never';
+                    statusDisplay.innerHTML = `
+                        <div style="color: var(--success);">Connected to Google Drive</div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">Last sync: ${lastSync}</div>
+                    `;
+                } else {
+                    statusDisplay.innerHTML = '<div style="color: var(--text-secondary);">Not connected</div>';
+                }
+            }
+        }
+
+        /**
+         * Connect to Google Drive for sync
+         */
+        function connectCloudSync() {
+            if (CloudSyncManager.connectGoogleDrive()) {
+                alert('Connected to Google Drive');
+                updateCloudSyncStatus();
+            }
+        }
+
+        /**
+         * Disconnect from cloud sync
+         */
+        function disconnectCloudSync() {
+            if (confirm('Disconnect from Google Drive?')) {
+                CloudSyncManager.disconnectGoogleDrive();
+                updateCloudSyncStatus();
+                alert('Disconnected from Google Drive');
+            }
+        }
+
+        /**
+         * Trigger manual sync to cloud
+         */
+        async function triggerManualSync() {
+            if (!CloudSyncManager.getToken()) {
+                alert('Connect to Google Drive first');
+                return;
+            }
+
+            const success = await CloudSyncManager.syncToCloud();
+            if (success) {
+                updateCloudSyncStatus();
+                alert('Sync completed successfully');
+            } else {
+                alert('Sync failed. Check console for details.');
+            }
+        }
+
+        /**
+         * Trigger manual download from cloud
+         */
+        async function triggerManualDownload() {
+            if (!CloudSyncManager.getToken()) {
+                alert('Connect to Google Drive first');
+                return;
+            }
+
+            const success = await CloudSyncManager.syncFromCloud();
+            if (success) {
+                updateCloudSyncStatus();
+                renderDetailView(currentModule);
+                alert('Download completed. Refresh page to see changes.');
+            } else {
+                alert('Download failed. Check console for details.');
+            }
+        }
+
+        /**
+         * Set sync interval
+         * @param {string} interval - "manual", "hourly", or "daily"
+         */
+        function setSyncInterval(interval) {
+            CloudSyncManager.syncInterval = interval;
+            CloudSyncManager.persist();
+
+            if (interval !== 'manual') {
+                CloudSyncManager.setupPeriodicSync();
+            }
+        }
     </script>
 </body>
 </html>

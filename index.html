@@ -1836,6 +1836,142 @@
             return report;
         }
 
+        // ============================================
+        // URL PARAMETER UTILITIES
+        // ============================================
+
+        /**
+         * Parse URL parameters into an object
+         * @returns {object} Parsed URL parameters
+         */
+        function getURLParameters() {
+            const params = {};
+            const queryString = window.location.search.substring(1);
+
+            if (queryString) {
+                const pairs = queryString.split('&');
+                pairs.forEach(pair => {
+                    const [key, value] = pair.split('=');
+                    if (key) {
+                        params[decodeURIComponent(key)] = value ? decodeURIComponent(value) : '';
+                    }
+                });
+            }
+
+            return params;
+        }
+
+        /**
+         * Update URL without reloading page
+         * @param {object} params - Parameters to set in URL
+         */
+        function updateURL(params) {
+            try {
+                const queryString = Object.keys(params)
+                    .filter(key => params[key])
+                    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                    .join('&');
+
+                const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+                window.history.replaceState({}, '', url);
+            } catch(error) {
+                console.error('Error updating URL:', error);
+            }
+        }
+
+        /**
+         * Get a single URL parameter value
+         * @param {string} key - Parameter key
+         * @param {string} defaultValue - Default if not found
+         * @returns {string} Parameter value
+         */
+        function getURLParam(key, defaultValue = '') {
+            const params = getURLParameters();
+            return params[key] || defaultValue;
+        }
+
+        // ============================================
+        // USER & CREDENTIAL SYSTEM
+        // ============================================
+
+        /**
+         * User and Credential Management
+         * Scaffolded for multi-user support in future
+         */
+        const UserSystem = (() => {
+            const STORAGE_KEY = 'life-os-current-user';
+            const DEFAULT_USER = {
+                id: 'default',
+                name: 'Default User',
+                credentialLevel: 'admin'  // 'admin' | 'editor' | 'viewer'
+            };
+
+            /**
+             * Get current user from localStorage
+             * @returns {object} Current user object
+             */
+            function getCurrentUser() {
+                try {
+                    const stored = localStorage.getItem(STORAGE_KEY);
+                    if (stored) {
+                        const user = JSON.parse(stored);
+                        // Validate user has required fields
+                        if (user.id && user.name && user.credentialLevel) {
+                            return user;
+                        }
+                    }
+                } catch(error) {
+                    console.error('Error retrieving user:', error);
+                }
+                return { ...DEFAULT_USER };
+            }
+
+            /**
+             * Set current user to localStorage
+             * @param {object} user - User object to save
+             * @returns {boolean} Success status
+             */
+            function setCurrentUser(user) {
+                try {
+                    if (!user.id || !user.name || !user.credentialLevel) {
+                        console.error('Invalid user object');
+                        return false;
+                    }
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+                    return true;
+                } catch(error) {
+                    console.error('Error saving user:', error);
+                    return false;
+                }
+            }
+
+            /**
+             * Check if current user has permission for action
+             * @param {string} action - Action to check ('read'|'edit'|'admin')
+             * @returns {boolean} True if user has permission
+             */
+            function hasPermission(action) {
+                const user = getCurrentUser();
+                const credentialMap = {
+                    'admin': ['read', 'edit', 'admin'],
+                    'editor': ['read', 'edit'],
+                    'viewer': ['read']
+                };
+
+                return credentialMap[user.credentialLevel]?.includes(action) || false;
+            }
+
+            return {
+                getCurrentUser,
+                setCurrentUser,
+                hasPermission,
+                DEFAULT_USER
+            };
+        })();
+
+        // Initialize current user on page load
+        let currentUser = UserSystem.getCurrentUser();
+
         const modules = [
             { id: 'afr', name: 'Annual Review', icon: '🎯', description: 'Faculty evaluation and self-assessment', storageKey: STORAGE_KEYS.afr, defaultTasks: ['COLLECT TEACHING EVALUATIONS', 'DOCUMENT SERVICE CONTRIBUTIONS', 'COMPILE RESEARCH ACTIVITIES', 'PROFESSIONAL DEVELOPMENT SUMMARY', 'SELF-EVALUATION NARRATIVE', 'GOAL SETTING FOR NEXT CYCLE'] },
             { id: 'uxr', name: 'UXR Lab', icon: '🧪', description: 'User research projects and studies', storageKey: STORAGE_KEYS.uxr, defaultTasks: ['USER RESEARCH PLANNING', 'PARTICIPANT RECRUITMENT', 'CONDUCT INTERVIEWS', 'DATA ANALYSIS', 'FINDINGS DOCUMENTATION', 'PRESENT RESULTS'] },
@@ -1970,6 +2106,7 @@
 
                 const card = document.createElement('div');
                 card.className = 'module-card';
+                card.setAttribute('data-module-id', module.id);
                 card.onclick = () => openModule(module);
                 
                 card.innerHTML = `
@@ -2008,22 +2145,35 @@
 
         function openModule(module) {
             currentModule = module;
+            currentFilter = 'all';  // Reset filter when opening module
             initializeDefaultTasks(module);
-            
+
             document.getElementById('overviewView').classList.add('hidden-view');
             document.getElementById('detailView').classList.remove('hidden-view');
-            
+
             document.getElementById('detailIcon').textContent = module.icon;
             document.getElementById('detailName').textContent = module.name;
             document.getElementById('detailInput').placeholder = `// add ${module.name.toLowerCase()} task...`;
-            
+
             renderDetailView(module);
+
+            // Update URL to reflect current module
+            updateURL({
+                module: module.id,
+                filter: 'all',
+                theme: localStorage.getItem('life-os-theme') || 'dark'
+            });
         }
 
         function backToDashboard() {
             currentModule = null;
             document.getElementById('detailView').classList.add('hidden-view');
             document.getElementById('overviewView').classList.remove('hidden-view');
+
+            // Update URL to clear module parameter
+            updateURL({
+                theme: localStorage.getItem('life-os-theme') || 'dark'
+            });
         }
 
         function renderDetailView(module) {
@@ -2142,6 +2292,15 @@
             event.target.classList.add('active');
 
             renderDetailView(currentModule);
+
+            // Update URL to reflect current filter
+            if (currentModule) {
+                updateURL({
+                    module: currentModule.id,
+                    filter: filterType,
+                    theme: localStorage.getItem('life-os-theme') || 'dark'
+                });
+            }
         }
 
         function updateModuleProgress(changedTaskId) {
@@ -3059,6 +3218,13 @@
             const themeBtn = document.querySelector('.theme-toggle');
             themeBtn.textContent = theme === 'light' ? '🌙 DARK' : '🌓 LIGHT';
             themeBtn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+
+            // Update URL to reflect theme change
+            const params = getURLParameters();
+            updateURL({
+                ...params,
+                theme: theme
+            });
         }
 
         function openHeatmapModal() {
@@ -3741,23 +3907,68 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Load saved theme preference
-            const savedTheme = localStorage.getItem('life-os-theme');
+            // ============================================
+            // APPLY URL PARAMETERS AND THEME
+            // ============================================
+
+            // Parse URL parameters
+            const urlParams = getURLParameters();
+
+            // Determine theme from URL param (overrides localStorage)
+            const urlTheme = urlParams.theme;
+            const savedTheme = urlTheme || localStorage.getItem('life-os-theme');
             const themeBtn = document.querySelector('.theme-toggle');
+
             if (savedTheme === 'light') {
                 document.body.classList.add('light-theme');
                 themeBtn.textContent = '🌙 DARK';
                 themeBtn.setAttribute('aria-pressed', 'true');
+                localStorage.setItem('life-os-theme', 'light');
             } else {
                 themeBtn.setAttribute('aria-pressed', 'false');
+                localStorage.setItem('life-os-theme', 'dark');
             }
 
             // Request notification permission
             requestNotificationPermission();
 
             modules.forEach(m => initializeDefaultTasks(m));
-            renderDashboard();
-            updateGlobalStats();
+
+            // Apply module from URL parameter
+            if (urlParams.module) {
+                const targetModule = modules.find(m => m.id === urlParams.module);
+                if (targetModule) {
+                    currentModule = targetModule;
+                    document.getElementById('overviewView').classList.add('hidden-view');
+                    document.getElementById('detailView').classList.remove('hidden-view');
+                    renderDetailView(targetModule);
+
+                    // Highlight selected module
+                    document.querySelectorAll('.module-card').forEach(card => {
+                        card.classList.remove('active');
+                    });
+                    const activeCard = document.querySelector(`[data-module-id="${targetModule.id}"]`);
+                    if (activeCard) {
+                        activeCard.classList.add('active');
+                    }
+                }
+            }
+
+            // Apply filter from URL parameter
+            if (urlParams.filter && ['all', 'today', 'week', 'high'].includes(urlParams.filter)) {
+                currentFilter = urlParams.filter;
+                if (currentModule) {
+                    renderDetailView(currentModule);
+                }
+            }
+
+            // If no module specified, show dashboard
+            if (!urlParams.module) {
+                renderDashboard();
+                updateGlobalStats();
+            } else {
+                updateGlobalStats();
+            }
 
             // Add keyboard shortcuts for undo/redo
             document.addEventListener('keydown', (e) => {

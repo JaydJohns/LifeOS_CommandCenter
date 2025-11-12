@@ -2082,6 +2082,17 @@
                 <div id="overviewView" class="view-container">
                     <div class="section-divider">📊 Command Center</div>
 
+                    <!-- Today's Tasks by Priority -->
+                    <div style="margin-bottom: 30px;">
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px; font-weight: 600;">📅 TODAY'S TASKS</div>
+                        <div id="todayTasksContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                            <!-- Priority sections will populate here -->
+                            <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 30px; font-size: 0.85rem;">
+                                Loading today's tasks...
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Global Stats Dashboard -->
                     <div class="global-stats" id="globalStats" style="display: none;">
                         <div class="section-divider" style="margin: 40px 0 20px 0; font-size: 1rem;">⚡ Global Statistics</div>
@@ -4444,6 +4455,90 @@
 
             // Also update the sidebar modules list
             renderModulesList();
+
+            // Render today's tasks by priority
+            renderTodaysTasks();
+        }
+
+        /**
+         * Render today's tasks organized by priority on dashboard
+         */
+        function renderTodaysTasks() {
+            const container = document.getElementById('todayTasksContainer');
+            if (!container) return;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayTime = today.getTime();
+
+            // Collect all tasks due today
+            const todayTasks = { high: [], medium: [], low: [] };
+
+            modules.forEach(module => {
+                const data = getStorageData(module.storageKey);
+                if (!data || !data.projects) return;
+
+                Object.values(data.projects).forEach(project => {
+                    if (!project.tasks) return;
+                    Object.entries(project.tasks).forEach(([taskId, task]) => {
+                        if (!task || typeof task !== 'object') return;
+
+                        // Check if task is due today
+                        const taskDate = task.dueDate ? new Date(task.dueDate) : new Date(task.createdAt);
+                        taskDate.setHours(0, 0, 0, 0);
+
+                        if (taskDate.getTime() === todayTime && !task.completed) {
+                            const priority = task.priority || 'medium';
+                            todayTasks[priority].push({
+                                ...task,
+                                taskId,
+                                projectId: project.id,
+                                moduleName: module.name,
+                                moduleIcon: module.icon,
+                                storageKey: module.storageKey
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Build HTML
+            let html = '';
+            const priorities = ['high', 'medium', 'low'];
+            const priorityConfig = {
+                high: { label: '🔴 HIGH PRIORITY', color: 'var(--accent)', bgColor: 'rgba(255, 0, 110, 0.1)' },
+                medium: { label: '🟡 MEDIUM PRIORITY', color: 'var(--warning)', bgColor: 'rgba(255, 170, 0, 0.1)' },
+                low: { label: '🟢 LOW PRIORITY', color: 'var(--success)', bgColor: 'rgba(0, 255, 136, 0.1)' }
+            };
+
+            let hasAnyTasks = false;
+            priorities.forEach(priority => {
+                const tasks = todayTasks[priority];
+                if (tasks.length > 0) {
+                    hasAnyTasks = true;
+                    const config = priorityConfig[priority];
+                    html += `
+                        <div style="background: ${config.bgColor}; border-left: 4px solid ${config.color}; border-radius: 4px; padding: 12px; grid-column: 1/-1;">
+                            <div style="color: ${config.color}; font-weight: 600; font-size: 0.85rem; margin-bottom: 10px;">${config.label} (${tasks.length})</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                ${tasks.slice(0, 5).map(task => `
+                                    <div style="background: rgba(0, 212, 255, 0.05); padding: 8px; border-radius: 3px; border-left: 2px solid ${config.color}; font-size: 0.8rem;">
+                                        <div style="color: var(--text-primary); margin-bottom: 3px;">${task.moduleIcon} ${task.label}</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.75rem;">${task.moduleName} • Est: ${task.estimate || 0}h</div>
+                                    </div>
+                                `).join('')}
+                                ${tasks.length > 5 ? `<div style="color: var(--text-secondary); font-size: 0.75rem; text-align: center;">+${tasks.length - 5} more tasks</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = hasAnyTasks ? html : `
+                <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 30px; font-size: 0.85rem;">
+                    ✨ No tasks scheduled for today
+                </div>
+            `;
         }
 
         /**

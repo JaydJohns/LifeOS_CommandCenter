@@ -1118,6 +1118,142 @@
             border-radius: 3px;
         }
 
+        /* Inline Tag Input Styles */
+        .task-tags-display {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 6px;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .task-tag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            background-size: 100%;
+            border: 1px solid;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            position: relative;
+            animation: slideIn 0.2s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .task-tag-badge:hover .tag-remove-btn {
+            opacity: 1;
+        }
+
+        .tag-remove-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 2px;
+            color: inherit;
+            font-size: 0.6rem;
+            padding: 0;
+            opacity: 0.6;
+            transition: all 0.15s ease;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .tag-remove-btn:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.15);
+        }
+
+        .task-tag-input {
+            padding: 4px 8px;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            min-width: 100px;
+            max-width: 150px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .task-tag-input:focus {
+            outline: none;
+            background: rgba(0, 212, 255, 0.15);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+
+        .task-tag-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* Autocomplete Popup */
+        .tag-autocomplete-popup {
+            position: absolute;
+            background: var(--bg-darker);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1001;
+            min-width: 150px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .tag-suggestion {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.15s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .tag-suggestion:hover,
+        .tag-suggestion.selected {
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .tag-suggestion-name {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .tag-suggestion-count {
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+            margin-left: 8px;
+        }
+
         .add-task-form {
             display: flex;
             flex-direction: column;
@@ -2327,7 +2463,7 @@
                                 <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Backup your data or restore from exports through the Sync Center</p>
                             </div>
                             <div style="border-left: 3px solid #ff006e; padding-left: 15px;">
-                                <strong style="color: #ff006e);">🎨 Dark/Light Theme</strong>
+                                <strong style="color: #ff006e;">🎨 Dark/Light Theme</strong>
                                 <p style="color: var(--text-secondary); margin-top: 5px; font-size: 0.9rem;">Toggle between dark and light themes to suit your preference</p>
                             </div>
                         </div>
@@ -2571,6 +2707,144 @@
                 </div>
                 <div class="modal-buttons">
                     <button class="modal-btn" onclick="closeGitHubSettings()">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Picker Modal (Phase 3b) -->
+        <div id="colorPickerModal" class="modal" style="z-index: 2000;">
+            <div class="modal-content" style="max-width: 400px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Color Picker</h3>
+                    <button onclick="document.getElementById('colorPickerModal').classList.remove('active')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">×</button>
+                </div>
+
+                <!-- Hue Slider -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-secondary);">HUE: <span id="hueValue">200°</span></label>
+                    <input id="hueSlider" type="range" min="0" max="360" value="200" style="width: 100%; cursor: pointer;" oninput="updateColorPreview()">
+                </div>
+
+                <!-- Saturation Slider -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-secondary);">SATURATION: <span id="saturationValue">85%</span></label>
+                    <input id="saturationSlider" type="range" min="0" max="100" value="85" style="width: 100%; cursor: pointer;" oninput="updateColorPreview()">
+                </div>
+
+                <!-- Lightness Slider -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: var(--text-secondary);">LIGHTNESS: <span id="lightnessValue">45%</span></label>
+                    <input id="lightnessSlider" type="range" min="0" max="100" value="45" style="width: 100%; cursor: pointer;" oninput="updateColorPreview()">
+                </div>
+
+                <!-- Color Preview -->
+                <div style="margin-bottom: 15px;">
+                    <div id="colorPreview" style="width: 100%; height: 60px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: monospace; margin-bottom: 8px;">#00FFAA</div>
+                    <div id="contrastRatio" style="text-align: center; font-size: 0.85rem; color: var(--success);">Contrast: 5.2:1 ✓</div>
+                </div>
+
+                <!-- Preset Palettes -->
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">PRESETS:</div>
+
+                    <!-- Vibrant Palette -->
+                    <div style="margin-bottom: 8px;">
+                        <button onclick="applyColorPreset('vibrant', 0)" style="width: 20px; height: 20px; background: hsl(0, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('vibrant', 1)" style="width: 20px; height: 20px; background: hsl(30, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('vibrant', 2)" style="width: 20px; height: 20px; background: hsl(60, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('vibrant', 3)" style="width: 20px; height: 20px; background: hsl(120, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('vibrant', 4)" style="width: 20px; height: 20px; background: hsl(180, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('vibrant', 5)" style="width: 20px; height: 20px; background: hsl(240, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('vibrant', 6)" style="width: 20px; height: 20px; background: hsl(270, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('vibrant', 7)" style="width: 20px; height: 20px; background: hsl(330, 100%, 50%); border: 1px solid rgba(255,255,255,0.3); cursor: pointer;"></button>
+                    </div>
+
+                    <!-- Pastel Palette -->
+                    <div style="margin-bottom: 8px;">
+                        <button onclick="applyColorPreset('pastel', 0)" style="width: 20px; height: 20px; background: hsl(0, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('pastel', 1)" style="width: 20px; height: 20px; background: hsl(30, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('pastel', 2)" style="width: 20px; height: 20px; background: hsl(60, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('pastel', 3)" style="width: 20px; height: 20px; background: hsl(120, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('pastel', 4)" style="width: 20px; height: 20px; background: hsl(180, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('pastel', 5)" style="width: 20px; height: 20px; background: hsl(240, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('pastel', 6)" style="width: 20px; height: 20px; background: hsl(270, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('pastel', 7)" style="width: 20px; height: 20px; background: hsl(330, 70%, 75%); border: 1px solid rgba(255,255,255,0.3); cursor: pointer;"></button>
+                    </div>
+
+                    <!-- Grayscale Palette -->
+                    <div>
+                        <button onclick="applyColorPreset('grayscale', 0)" style="width: 20px; height: 20px; background: hsl(0, 0%, 100%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('grayscale', 1)" style="width: 20px; height: 20px; background: hsl(0, 0%, 75%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('grayscale', 2)" style="width: 20px; height: 20px; background: hsl(0, 0%, 50%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('grayscale', 3)" style="width: 20px; height: 20px; background: hsl(0, 0%, 25%); border: 1px solid rgba(255,255,255,0.3); margin-right: 4px; cursor: pointer;"></button>
+                        <button onclick="applyColorPreset('grayscale', 4)" style="width: 20px; height: 20px; background: hsl(0, 0%, 0%); border: 1px solid rgba(255,255,255,0.3); cursor: pointer;"></button>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div style="display: flex; gap: 8px; margin-top: 20px;">
+                    <button onclick="saveColorFromPicker()" style="flex: 1; padding: 10px; background: var(--primary); color: var(--bg-dark); border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">APPLY COLOR</button>
+                    <button onclick="resetTagColor(document.getElementById('colorPickerModal').dataset.tagPath); document.getElementById('colorPickerModal').classList.remove('active');" style="flex: 1; padding: 10px; background: rgba(255, 0, 110, 0.2); color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; cursor: pointer; font-weight: bold;">AUTO COLOR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Operations Panel (Phase 3c) -->
+        <div id="bulkOperationsPanel" style="display: none; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 4px; margin-bottom: 16px;">
+            <span id="bulkSelectionCounter" style="color: var(--primary); font-weight: bold; min-width: 120px;"></span>
+            <button onclick="openBulkModal('add')" style="padding: 6px 12px; background: rgba(0, 212, 255, 0.2); border: 1px solid var(--primary); color: var(--primary); border-radius: 4px; cursor: pointer; font-size: 0.85rem;">+ ADD TAG</button>
+            <button onclick="openBulkModal('remove')" style="padding: 6px 12px; background: rgba(255, 0, 110, 0.2); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; cursor: pointer; font-size: 0.85rem;">- REMOVE TAG</button>
+            <button onclick="openBulkModal('replace')" style="padding: 6px 12px; background: rgba(255, 170, 0, 0.2); border: 1px solid var(--warning); color: var(--warning); border-radius: 4px; cursor: pointer; font-size: 0.85rem;">⟷ REPLACE TAG</button>
+            <button onclick="bulkClearTags()" style="padding: 6px 12px; background: rgba(255, 0, 110, 0.2); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; cursor: pointer; font-size: 0.85rem;">✕ CLEAR ALL</button>
+            <button onclick="deselectAllTasks()" style="padding: 6px 12px; background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); color: var(--text-secondary); border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-left: auto;">DESELECT ALL</button>
+        </div>
+
+        <!-- Tag Suggestions Container (Phase 3d) -->
+        <div id="tagSuggestionsContainer"></div>
+
+        <!-- Cloud Sync Modal (Phase 3e) -->
+        <div id="cloudSyncModal" class="modal" style="z-index: 2000;">
+            <div class="modal-content" style="max-width: 450px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Cloud Sync Settings</h3>
+                    <button onclick="closeCloudSyncSettings()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">×</button>
+                </div>
+
+                <!-- Connection Status -->
+                <div id="cloudSyncStatusDisplay" style="padding: 12px; background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 4px; margin-bottom: 16px; color: var(--text-secondary); font-size: 0.9rem;">
+                    Not connected to Google Drive
+                </div>
+
+                <!-- Connection Buttons -->
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <button onclick="connectCloudSync()" id="cloudConnectBtn" style="flex: 1; padding: 10px; background: var(--success); color: var(--bg-dark); border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">CONNECT GOOGLE DRIVE</button>
+                    <button onclick="disconnectCloudSync()" id="cloudDisconnectBtn" style="flex: 1; padding: 10px; background: var(--accent); color: var(--bg-darker); border: none; border-radius: 4px; cursor: pointer; font-weight: bold; display: none;">DISCONNECT</button>
+                </div>
+
+                <!-- Sync Interval Selection -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-secondary);">SYNC INTERVAL:</label>
+                    <select onchange="setSyncInterval(this.value)" style="width: 100%; padding: 8px; background: var(--bg-darker); color: var(--text-primary); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 4px; cursor: pointer;">
+                        <option value="manual">Manual (Click "Sync Now")</option>
+                        <option value="hourly">Hourly</option>
+                        <option value="daily">Daily</option>
+                    </select>
+                </div>
+
+                <!-- Manual Sync Buttons -->
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <button onclick="triggerManualSync()" style="flex: 1; padding: 10px; background: rgba(0, 212, 255, 0.2); border: 1px solid var(--primary); color: var(--primary); border-radius: 4px; cursor: pointer; font-weight: bold;">⬆ SYNC NOW</button>
+                    <button onclick="triggerManualDownload()" style="flex: 1; padding: 10px; background: rgba(0, 212, 255, 0.2); border: 1px solid var(--primary); color: var(--primary); border-radius: 4px; cursor: pointer; font-weight: bold;">⬇ DOWNLOAD</button>
+                </div>
+
+                <!-- Sync Status -->
+                <div style="text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
+                    <span id="syncStatusIndicator">Ready</span>
+                </div>
+
+                <!-- Help Text -->
+                <div style="margin-top: 16px; padding: 12px; background: rgba(0, 212, 255, 0.05); border-left: 3px solid var(--primary); border-radius: 2px; font-size: 0.85rem; color: var(--text-secondary);">
+                    <strong>Cloud Sync:</strong> Backup and synchronize your Life OS data with Google Drive. Your data stays private - Life OS only has access to files it creates. Syncing is optional and can be disabled anytime.
                 </div>
             </div>
         </div>
@@ -2860,6 +3134,155 @@
                 console.error('Error removing tag from task:', error);
                 return false;
             }
+        }
+
+        /**
+         * Remove tag from task and update UI (for inline tag input)
+         * @param {string} storageKey - Module storage key
+         * @param {string} projectId - Project ID
+         * @param {string} taskId - Task ID
+         * @param {string} tagName - Tag name to remove
+         */
+        function removeTagFromTaskUI(storageKey, projectId, taskId, tagName) {
+            UndoRedoManager.saveState('Remove tag');
+            if (removeTagFromTask(storageKey, projectId, taskId, tagName)) {
+                // Find and update the task card
+                const currentModuleForKey = modules.find(m => m.storageKey === storageKey);
+                if (currentModuleForKey) {
+                    renderDetailView(currentModuleForKey);
+                    updateGlobalStats();
+                    updateUndoRedoButtons();
+                }
+            }
+        }
+
+        /**
+         * Get tag suggestions based on input (for autocomplete)
+         * @param {string} input - User input
+         * @param {Array} existingTags - Tags already on this task
+         * @returns {Array} Suggested tags with usage counts
+         */
+        function getTagSuggestions(input, existingTags = []) {
+            if (!input || input.trim().length === 0) {
+                return [];
+            }
+
+            const inputLower = input.toLowerCase().trim();
+            const allTags = getAllTags();
+            const existingTagsLower = existingTags.map(t => t.toLowerCase());
+
+            // Filter tags by input and exclude already-added tags
+            const suggestions = allTags
+                .filter(tag => {
+                    const tagNameLower = tag.name.toLowerCase();
+                    return (
+                        tagNameLower.includes(inputLower) &&
+                        !existingTagsLower.includes(tagNameLower)
+                    );
+                })
+                .map(tag => ({
+                    name: tag.name,
+                    count: getTagUsageCount(tag.name)
+                }))
+                // Sort by relevance: starts with input first, then by usage count
+                .sort((a, b) => {
+                    const aStartsWith = a.name.toLowerCase().startsWith(inputLower);
+                    const bStartsWith = b.name.toLowerCase().startsWith(inputLower);
+                    if (aStartsWith !== bStartsWith) {
+                        return aStartsWith ? -1 : 1;
+                    }
+                    return b.count - a.count;
+                })
+                .slice(0, 5); // Limit to 5 suggestions
+
+            return suggestions;
+        }
+
+        /**
+         * Show autocomplete popup for tag input
+         * @param {HTMLElement} inputElement - The tag input element
+         * @param {Array} suggestions - Array of suggestion objects
+         */
+        function showTagAutocomplete(inputElement, suggestions) {
+            // Remove existing popup
+            hideTagAutocomplete();
+
+            if (!suggestions || suggestions.length === 0) {
+                return;
+            }
+
+            // Create popup container
+            const popup = document.createElement('div');
+            popup.className = 'tag-autocomplete-popup';
+            popup.style.position = 'absolute';
+
+            // Position popup below input
+            const rect = inputElement.getBoundingClientRect();
+            popup.style.top = (rect.height + 4) + 'px';
+            popup.style.left = '0px';
+
+            // Add suggestions
+            suggestions.forEach((suggestion, index) => {
+                const item = document.createElement('div');
+                item.className = 'tag-suggestion';
+                item.innerHTML = `
+                    <span class="tag-suggestion-name">${suggestion.name}</span>
+                    <span class="tag-suggestion-count">${suggestion.count}</span>
+                `;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    selectTagSuggestion(suggestion.name, inputElement);
+                };
+                popup.appendChild(item);
+            });
+
+            // Insert popup as sibling and set up container positioning
+            inputElement.parentNode.style.position = 'relative';
+            inputElement.parentNode.appendChild(popup);
+            inputElement.dataset.autocompleteOpen = 'true';
+        }
+
+        /**
+         * Hide autocomplete popup
+         */
+        function hideTagAutocomplete() {
+            const popup = document.querySelector('.tag-autocomplete-popup');
+            if (popup) {
+                popup.remove();
+            }
+            const openInputs = document.querySelectorAll('[data-autocomplete-open="true"]');
+            openInputs.forEach(input => {
+                delete input.dataset.autocompleteOpen;
+            });
+        }
+
+        /**
+         * Select tag from suggestion and add to task
+         * @param {string} tagName - Tag name to add
+         * @param {HTMLElement} inputElement - The tag input element
+         */
+        function selectTagSuggestion(tagName, inputElement) {
+            const storageKey = inputElement.dataset.storageKey;
+            const projectId = inputElement.dataset.projectId;
+            const taskId = inputElement.dataset.taskId;
+
+            if (!storageKey || !projectId || !taskId) {
+                console.error('Missing data attributes on tag input');
+                return;
+            }
+
+            UndoRedoManager.saveState('Add tag');
+            if (addTagToTask(storageKey, projectId, taskId, tagName)) {
+                // Update UI
+                const currentModuleForKey = modules.find(m => m.storageKey === storageKey);
+                if (currentModuleForKey) {
+                    renderDetailView(currentModuleForKey);
+                    updateGlobalStats();
+                    updateUndoRedoButtons();
+                }
+            }
+
+            hideTagAutocomplete();
         }
 
         /**
@@ -3887,40 +4310,8 @@
             const tagsList = document.getElementById('tagsList');
             if (!tagsList) return;
 
-            const allTags = getAllTags();
-
-            if (allTags.length === 0) {
-                tagsList.innerHTML = '<span style="color: var(--text-secondary);">No tags yet</span>';
-                return;
-            }
-
-            tagsList.innerHTML = allTags
-                .filter(t => !t.archived) // Only show active tags
-                .sort((a, b) => getTagUsageCount(b.name) - getTagUsageCount(a.name)) // Sort by usage
-                .map(tag => {
-                    const count = getTagUsageCount(tag.name);
-                    const isSelected = currentTagFilters.some(t => t.toLowerCase() === tag.name.toLowerCase());
-
-                    return `
-                        <div style="
-                            padding: 8px;
-                            background: ${isSelected ? getTagColor(tag.name) + '22' : 'transparent'};
-                            border: 1px solid ${isSelected ? getTagColor(tag.name) : 'rgba(0, 212, 255, 0.2)'};
-                            border-radius: 4px;
-                            cursor: pointer;
-                            transition: all 0.2s;
-                        "
-                        onclick="toggleTagFilter('${tag.name}')"
-                        onmouseover="this.style.background='${getTagColor(tag.name) + '11'}'"
-                        onmouseout="this.style.background='${isSelected ? getTagColor(tag.name) + '22' : 'transparent'}'">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="color: ${getTagColor(tag.name)}; font-weight: 600;">${tag.name}</span>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">${count}</span>
-                            </div>
-                        </div>
-                    `;
-                })
-                .join('');
+            // Use new hierarchical tree rendering (Phase 3a)
+            tagsList.innerHTML = renderTagTree();
         }
 
         /**
@@ -4367,43 +4758,218 @@
                     'none': ''
                 }[recurrence] || '';
 
-                const tagsHTML = taskTags && taskTags.length > 0 ? `
-                    <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;">
-                        ${taskTags.slice(0, 3).map(tag => `
-                            <span style="
-                                font-size: 0.7rem;
-                                padding: 2px 6px;
-                                background: ${getTagColor(tag)}33;
-                                border: 1px solid ${getTagColor(tag)};
-                                border-radius: 3px;
+                const tagsHTML = `
+                    <div class="task-tags-display">
+                        ${taskTags.map(tag => `
+                            <span class="task-tag-badge" style="
+                                background: ${getTagColor(tag)}22;
+                                border-color: ${getTagColor(tag)};
                                 color: ${getTagColor(tag)};
-                            ">${tag}</span>
+                            ">
+                                ${tag}
+                                <button class="tag-remove-btn"
+                                    onclick="removeTagFromTaskUI('${storageKey}', '${project.id}', '${taskId}', '${tag}')"
+                                    title="Remove tag">×</button>
+                            </span>
                         `).join('')}
-                        ${taskTags.length > 3 ? `<span style="font-size: 0.7rem; color: var(--text-secondary);">+${taskTags.length - 3}</span>` : ''}
+                        <input
+                            type="text"
+                            class="task-tag-input"
+                            placeholder="+ tag"
+                            data-storage-key="${storageKey}"
+                            data-project-id="${project.id}"
+                            data-task-id="${taskId}"
+                        />
                     </div>
-                ` : '';
+                `;
 
                 const item = document.createElement('div');
                 item.className = 'check-item';
                 item.innerHTML = `
-                    <input type="checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''} onchange="updateTaskInProject('${storageKey}', '${project.id}', '${taskId}')">
-                    <div style="flex: 1;">
-                        <label for="${taskId}">${label}</label>
-                        ${tagsHTML}
-                        <div class="task-meta">
-                            <span class="meta-item"><span class="priority-indicator priority-${priority}"></span>${priority.toUpperCase()}</span>
-                            <span class="meta-item">⏱️ ${estimate}h</span>
-                            ${recurrence !== 'none' ? `<span class="meta-item">${recurrenceEmoji} ${recurrence.toUpperCase()}</span>` : ''}
+                    <div style="display: flex; gap: 8px; align-items: flex-start;">
+                        <!-- Selection checkbox for bulk operations (Phase 3c) -->
+                        <input type="checkbox"
+                            class="task-checkbox"
+                            onchange="toggleTaskSelection('${taskId}')"
+                            style="margin-top: 4px; cursor: pointer;"
+                            ${selectedTaskIds.has(taskId) ? 'checked' : ''}>
+
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <!-- Completion checkbox -->
+                                <input type="checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''} onchange="updateTaskInProject('${storageKey}', '${project.id}', '${taskId}')">
+                                <label for="${taskId}" style="margin: 0;">${label}</label>
+                            </div>
+                            ${tagsHTML}
+                            <div class="task-meta">
+                                <span class="meta-item"><span class="priority-indicator priority-${priority}"></span>${priority.toUpperCase()}</span>
+                                <span class="meta-item">⏱️ ${estimate}h</span>
+                                ${recurrence !== 'none' ? `<span class="meta-item">${recurrenceEmoji} ${recurrence.toUpperCase()}</span>` : ''}
+                            </div>
                         </div>
-                    </div>
-                    <div class="task-actions">
-                        <button class="task-btn edit" onclick="openNotesModal('${taskId}')">NOTES</button>
-                        <button class="task-btn edit" onclick="editTask('${taskId}')">EDIT</button>
-                        <button class="task-btn delete" onclick="deleteTaskFromProject('${storageKey}', '${project.id}', '${taskId}'); renderDetailView(currentModule);">DELETE</button>
+                        <div class="task-actions">
+                            <button class="task-btn edit" onclick="openNotesModal('${taskId}')">NOTES</button>
+                            <button class="task-btn edit" onclick="editTask('${taskId}')">EDIT</button>
+                            <button class="task-btn delete" onclick="deleteTaskFromProject('${storageKey}', '${project.id}', '${taskId}'); renderDetailView(currentModule);">DELETE</button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(item);
             });
+
+            // Set up event listeners for tag inputs
+            setTimeout(() => {
+                attachTagInputListeners();
+            }, 50);
+        }
+
+        /**
+         * Flag to track if global click listener is attached
+         */
+        let tagInputGlobalListenerAttached = false;
+
+        /**
+         * Attach event listeners to all tag input fields
+         */
+        function attachTagInputListeners() {
+            const tagInputs = document.querySelectorAll('.task-tag-input');
+
+            tagInputs.forEach(input => {
+                // Remove existing listeners by cloning
+                const newInput = input.cloneNode(true);
+                input.parentNode.replaceChild(newInput, input);
+
+                // Input event for autocomplete
+                newInput.addEventListener('input', (e) => {
+                    const inputValue = e.target.value.trim();
+                    const existingTags = Array.from(e.target.parentNode.querySelectorAll('.task-tag-badge'))
+                        .map(badge => {
+                            // Extract tag name by removing button text
+                            const text = badge.textContent.trim();
+                            return text.replace(/×\s*$/, '').trim();
+                        });
+
+                    if (inputValue.length > 0) {
+                        const suggestions = getTagSuggestions(inputValue, existingTags);
+                        showTagAutocomplete(e.target, suggestions);
+                    } else {
+                        hideTagAutocomplete();
+                    }
+                });
+
+                // Keydown event for navigation and selection
+                newInput.addEventListener('keydown', (e) => {
+                    const popup = document.querySelector('.tag-autocomplete-popup');
+
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const input = e.target.value.trim();
+
+                        if (input.length === 0) {
+                            return;
+                        }
+
+                        // Check if input is valid tag name
+                        if (!isValidTagName(input)) {
+                            console.warn('Invalid tag name');
+                            return;
+                        }
+
+                        const storageKey = e.target.dataset.storageKey;
+                        const projectId = e.target.dataset.projectId;
+                        const taskId = e.target.dataset.taskId;
+
+                        UndoRedoManager.saveState('Add tag');
+                        if (addTagToTask(storageKey, projectId, taskId, input)) {
+                            const currentModuleForKey = modules.find(m => m.storageKey === storageKey);
+                            if (currentModuleForKey) {
+                                renderDetailView(currentModuleForKey);
+                                updateGlobalStats();
+                                updateUndoRedoButtons();
+                            }
+                        }
+
+                        hideTagAutocomplete();
+                        e.target.value = '';
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        hideTagAutocomplete();
+                    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        if (!popup) return;
+
+                        e.preventDefault();
+                        const items = popup.querySelectorAll('.tag-suggestion');
+                        const currentlySelected = popup.querySelector('.tag-suggestion.selected');
+
+                        if (e.key === 'ArrowDown') {
+                            if (!currentlySelected) {
+                                items[0].classList.add('selected');
+                            } else {
+                                const nextItem = currentlySelected.nextElementSibling;
+                                if (nextItem) {
+                                    currentlySelected.classList.remove('selected');
+                                    nextItem.classList.add('selected');
+                                    nextItem.scrollIntoView({ block: 'nearest' });
+                                }
+                            }
+                        } else {
+                            if (currentlySelected) {
+                                const prevItem = currentlySelected.previousElementSibling;
+                                if (prevItem) {
+                                    currentlySelected.classList.remove('selected');
+                                    prevItem.classList.add('selected');
+                                    prevItem.scrollIntoView({ block: 'nearest' });
+                                }
+                            }
+                        }
+                    } else if (e.key === 'Tab') {
+                        // Accept selected suggestion on Tab
+                        if (popup) {
+                            const selected = popup.querySelector('.tag-suggestion.selected');
+                            if (selected) {
+                                e.preventDefault();
+                                const tagName = selected.querySelector('.tag-suggestion-name').textContent;
+                                selectTagSuggestion(tagName, e.target);
+                            }
+                        }
+                        hideTagAutocomplete();
+                    }
+                });
+
+                // Focus event
+                newInput.addEventListener('focus', (e) => {
+                    const inputValue = e.target.value.trim();
+                    if (inputValue.length > 0) {
+                        const existingTags = Array.from(e.target.parentNode.querySelectorAll('.task-tag-badge'))
+                            .map(badge => {
+                                const text = badge.textContent.trim();
+                                return text.replace(/×\s*$/, '').trim();
+                            });
+                        const suggestions = getTagSuggestions(inputValue, existingTags);
+                        showTagAutocomplete(e.target, suggestions);
+                    }
+                });
+
+                // Blur event - hide autocomplete
+                newInput.addEventListener('blur', (e) => {
+                    // Delay to allow click on suggestion
+                    setTimeout(() => {
+                        hideTagAutocomplete();
+                    }, 200);
+                });
+            });
+
+            // Close autocomplete when clicking outside (only attach once globally)
+            if (!tagInputGlobalListenerAttached) {
+                document.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('task-tag-input') &&
+                        !e.target.classList.contains('tag-suggestion') &&
+                        !e.target.closest('.tag-autocomplete-popup')) {
+                        hideTagAutocomplete();
+                    }
+                }, true);
+                tagInputGlobalListenerAttached = true;
+            }
         }
 
         function toggleProject(header) {

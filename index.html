@@ -3155,6 +3155,7 @@
                 const currentModuleForKey = modules.find(m => m.storageKey === storageKey);
                 if (currentModuleForKey) {
                     renderDetailView(currentModuleForKey);
+                    renderTagSidebar();
                     updateGlobalStats();
                     updateUndoRedoButtons();
                 }
@@ -4894,6 +4895,7 @@
                             const currentModuleForKey = modules.find(m => m.storageKey === storageKey);
                             if (currentModuleForKey) {
                                 renderDetailView(currentModuleForKey);
+                                renderTagSidebar();
                                 updateGlobalStats();
                                 updateUndoRedoButtons();
                             }
@@ -5394,6 +5396,7 @@
                     creationTagInput.value = '';
                 }
                 renderDetailView(currentModule);
+                renderTagSidebar();
                 renderDashboard();
                 updateGlobalStats();
                 updateUndoRedoButtons();
@@ -9126,6 +9129,7 @@
 
             setStorageData(currentModule.storageKey, data);
             renderDetailView(currentModule);
+            renderTagSidebar();
             updateUndoRedoButtons();
 
             alert(`Added to ${added} task(s)${skipped > 0 ? ` (${skipped} skipped - tag limit or duplicate)` : ''}`);
@@ -9167,6 +9171,7 @@
 
             setStorageData(currentModule.storageKey, data);
             renderDetailView(currentModule);
+            renderTagSidebar();
             updateUndoRedoButtons();
 
             alert(`Removed from ${removed} tag instance(s)`);
@@ -9211,6 +9216,7 @@
             createTag(newTag);
             setStorageData(currentModule.storageKey, data);
             renderDetailView(currentModule);
+            renderTagSidebar();
             updateUndoRedoButtons();
 
             alert(`Replaced in ${replaced} task(s)`);
@@ -9246,6 +9252,7 @@
 
             setStorageData(currentModule.storageKey, data);
             renderDetailView(currentModule);
+            renderTagSidebar();
             updateUndoRedoButtons();
 
             alert('Tags cleared from all selected tasks');

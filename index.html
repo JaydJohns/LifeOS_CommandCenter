@@ -2614,8 +2614,8 @@
                     <button onclick="toggleTagSidebar()" style="background: none; border: none; color: var(--primary); cursor: pointer;">✕</button>
                 </div>
             </div>
-            <div id="tagsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-                <!-- Tags will render here -->
+            <div id="legacyTagsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Tags will render here (legacy right sidebar - deprecated) -->
             </div>
             <button id="toggleTagSidebarBtn" class="btn" onclick="toggleTagSidebar()" style="width: 100%; margin-top: auto; padding: 8px;">HIDE TAGS</button>
         </div>
@@ -3283,6 +3283,7 @@
                 const currentModuleForKey = modules.find(m => m.storageKey === storageKey);
                 if (currentModuleForKey) {
                     renderDetailView(currentModuleForKey);
+                    renderTagSidebar();
                     updateGlobalStats();
                     updateUndoRedoButtons();
                 }
@@ -6365,6 +6366,7 @@
             // Add tag
             if (addTagToTask(currentModule.storageKey, projectId, currentEditingTaskId, tagName)) {
                 renderModalTags();
+                renderTagSidebar();
                 document.getElementById('tagInput').value = '';
                 document.getElementById('tagSuggestions').style.display = 'none';
                 updateUndoRedoButtons();
@@ -6406,6 +6408,7 @@
             // Remove tag
             if (removeTagFromTask(currentModule.storageKey, projectId, currentEditingTaskId, tagName)) {
                 renderModalTags();
+                renderTagSidebar();
                 updateUndoRedoButtons();
 
                 // Refresh task display

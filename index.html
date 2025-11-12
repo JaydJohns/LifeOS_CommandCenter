@@ -2165,6 +2165,7 @@
                             </div>
                             <div class="form-row">
                                 <input type="number" id="estimateInput" class="input-field" placeholder="TIME ESTIMATE (hours)" min="0" max="1000" step="0.5" value="1">
+                                <input type="date" id="dueDateInput" class="input-field" placeholder="DUE DATE">
                             </div>
                             <div class="form-row">
                                 <div id="creationTagsContainer" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; align-items: center;">
@@ -2936,7 +2937,9 @@
                 const data = localStorage.getItem('life-os-tags-registry');
                 if (!data) return [];
                 const registry = JSON.parse(data);
-                return registry.tags || [];
+                const tags = registry.tags || [];
+                // Ensure we always return an array
+                return Array.isArray(tags) ? tags : [];
             } catch (error) {
                 console.error('Error getting tags:', error);
                 return [];
@@ -5458,6 +5461,15 @@
                     .filter(tag => tag.length > 0 && isValidTagName(tag))
                     .map(tag => tag.toLowerCase());
 
+                // Extract due date from input
+                const dueDateInput = document.getElementById('dueDateInput');
+                let dueDate = Date.now();
+                if (dueDateInput && dueDateInput.value) {
+                    // Convert date string (YYYY-MM-DD) to timestamp
+                    const selectedDate = new Date(dueDateInput.value + 'T00:00:00');
+                    dueDate = selectedDate.getTime();
+                }
+
                 // Create task data with tags support
                 const taskData = {
                     completed: false,
@@ -5466,7 +5478,7 @@
                     recurrence: recurrence,
                     label: taskLabel,
                     createdAt: Date.now(),
-                    dueDate: Date.now(),
+                    dueDate: dueDate,
                     tags: tagsArray
                 };
 
@@ -5491,6 +5503,7 @@
                 document.getElementById('estimateInput').value = '1';
                 document.getElementById('prioritySelect').value = 'medium';
                 document.getElementById('recurrenceSelect').value = 'none';
+                document.getElementById('dueDateInput').value = '';
                 if (creationTagInput) {
                     creationTagInput.value = '';
                     creationTagInput.blur(); // Remove focus from tag input

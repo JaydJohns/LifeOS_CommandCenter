@@ -4505,6 +4505,9 @@
                 });
             });
 
+            // Get collapse state from localStorage
+            const collapsedState = JSON.parse(localStorage.getItem('todayTasksCollapsed') || '{}');
+
             // Build HTML
             let html = '';
             const priorities = ['high', 'medium', 'low'];
@@ -4520,10 +4523,18 @@
                 if (tasks.length > 0) {
                     hasAnyTasks = true;
                     const config = priorityConfig[priority];
+                    const isCollapsed = collapsedState[priority] || false;
+                    const toggleIcon = isCollapsed ? '▶' : '▼';
+
                     html += `
                         <div style="background: ${config.bgColor}; border-left: 4px solid ${config.color}; border-radius: 4px; padding: 12px; grid-column: 1/-1;">
-                            <div style="color: ${config.color}; font-weight: 600; font-size: 0.85rem; margin-bottom: 10px;">${config.label} (${tasks.length})</div>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;" onclick="toggleTodayTasksSection('${priority}')">
+                                <div style="color: ${config.color}; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                                    <span style="display: inline-block; width: 14px; text-align: center; transition: transform 0.2s;">${toggleIcon}</span>
+                                    <span>${config.label} (${tasks.length})</span>
+                                </div>
+                            </div>
+                            <div id="today-tasks-${priority}" style="display: ${isCollapsed ? 'none' : 'flex'}; flex-direction: column; gap: 8px; margin-top: 10px;">
                                 ${tasks.slice(0, 5).map(task => `
                                     <div style="background: rgba(0, 212, 255, 0.05); padding: 8px; border-radius: 3px; border-left: 2px solid ${config.color}; font-size: 0.8rem;">
                                         <div style="color: var(--text-primary); margin-bottom: 3px;">${task.moduleIcon} ${task.label}</div>
@@ -4542,6 +4553,30 @@
                     ✨ No tasks scheduled for today
                 </div>
             `;
+        }
+
+        /**
+         * Toggle collapsed state for a priority section in Today's Tasks widget
+         */
+        function toggleTodayTasksSection(priority) {
+            const collapsedState = JSON.parse(localStorage.getItem('todayTasksCollapsed') || '{}');
+            collapsedState[priority] = !collapsedState[priority];
+            localStorage.setItem('todayTasksCollapsed', JSON.stringify(collapsedState));
+
+            // Update display
+            const section = document.getElementById(`today-tasks-${priority}`);
+            if (section) {
+                section.style.display = section.style.display === 'none' ? 'flex' : 'none';
+            }
+
+            // Update icon rotation
+            const container = section?.parentElement;
+            if (container) {
+                const icon = container.querySelector('span[style*="display: inline-block"]');
+                if (icon) {
+                    icon.textContent = collapsedState[priority] ? '▶' : '▼';
+                }
+            }
         }
 
         /**

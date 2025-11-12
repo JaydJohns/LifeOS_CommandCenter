@@ -5666,8 +5666,22 @@
             if (!currentModule) return;
 
             try {
-                const tasks = getStorageData(currentModule.storageKey);
-                const taskData = tasks[taskId];
+                const data = getStorageData(currentModule.storageKey);
+                if (!data || !data.projects) {
+                    alert('TASK NOT FOUND OR INVALID FORMAT');
+                    return;
+                }
+
+                // Search for task in all projects
+                let taskData = null;
+                let foundProject = null;
+                for (const [projectId, project] of Object.entries(data.projects)) {
+                    if (project.tasks && project.tasks[taskId]) {
+                        taskData = project.tasks[taskId];
+                        foundProject = { id: projectId, ...project };
+                        break;
+                    }
+                }
 
                 if (!taskData || typeof taskData !== 'object') {
                     alert('TASK NOT FOUND OR INVALID FORMAT');
@@ -5728,9 +5742,10 @@
                 taskData.estimate = newEstimate;
                 taskData.recurrence = newRecurrence;
 
-                tasks[taskId] = taskData;
+                // Update task in the correct project
+                foundProject.tasks[taskId] = taskData;
 
-                if (!setStorageData(currentModule.storageKey, tasks)) {
+                if (!setStorageData(currentModule.storageKey, data)) {
                     console.error('Failed to save task edits');
                     return;
                 }
@@ -6178,13 +6193,31 @@
         function openNotesModal(taskId) {
             if (!currentModule) return;
 
-            const tasks = JSON.parse(localStorage.getItem(currentModule.storageKey) || '{}');
-            const taskData = tasks[taskId];
+            const data = getStorageData(currentModule.storageKey);
+            if (!data || !data.projects) {
+                alert('TASK NOT FOUND');
+                return;
+            }
+
+            // Search for task in all projects
+            let taskData = null;
+            let foundProject = null;
+            for (const [projectId, project] of Object.entries(data.projects)) {
+                if (project.tasks && project.tasks[taskId]) {
+                    taskData = project.tasks[taskId];
+                    foundProject = { id: projectId, ...project };
+                    break;
+                }
+            }
 
             if (!taskData || typeof taskData !== 'object') {
                 alert('TASK NOT FOUND');
                 return;
             }
+
+            // Store the project info for saving notes later
+            window.notesTaskProject = foundProject;
+            window.notesTaskData = data;
 
             currentEditingTaskId = taskId;
             const label = taskData.label || 'Task';
@@ -6245,8 +6278,16 @@
                     return;
                 }
 
-                const tasks = getStorageData(currentModule.storageKey);
-                const taskData = tasks[currentEditingTaskId];
+                // Use stored project info or get fresh data
+                let data = window.notesTaskData || getStorageData(currentModule.storageKey);
+                let foundProject = window.notesTaskProject;
+
+                if (!data || !data.projects || !foundProject) {
+                    console.error('Failed to get task project');
+                    return;
+                }
+
+                const taskData = foundProject.tasks[currentEditingTaskId];
 
                 // Save state for undo/redo before making changes
                 UndoRedoManager.saveState(`Subtask added: "${label}"`);
@@ -6260,9 +6301,9 @@
                     completed: false
                 });
 
-                tasks[currentEditingTaskId] = taskData;
+                foundProject.tasks[currentEditingTaskId] = taskData;
 
-                if (!setStorageData(currentModule.storageKey, tasks)) {
+                if (!setStorageData(currentModule.storageKey, data)) {
                     console.error('Failed to save subtask');
                     return;
                 }
@@ -6277,17 +6318,25 @@
 
         function deleteSubtask(index) {
             try {
-                const tasks = getStorageData(currentModule.storageKey);
-                const taskData = tasks[currentEditingTaskId];
+                // Use stored project info or get fresh data
+                let data = window.notesTaskData || getStorageData(currentModule.storageKey);
+                let foundProject = window.notesTaskProject;
+
+                if (!data || !data.projects || !foundProject) {
+                    console.error('Failed to get task project');
+                    return;
+                }
+
+                const taskData = foundProject.tasks[currentEditingTaskId];
 
                 if (taskData.subtasks) {
                     // Save state for undo/redo before making changes
                     UndoRedoManager.saveState(`Subtask deleted`);
 
                     taskData.subtasks.splice(index, 1);
-                    tasks[currentEditingTaskId] = taskData;
+                    foundProject.tasks[currentEditingTaskId] = taskData;
 
-                    if (!setStorageData(currentModule.storageKey, tasks)) {
+                    if (!setStorageData(currentModule.storageKey, data)) {
                         console.error('Failed to save subtask deletion');
                         return;
                     }
@@ -6303,17 +6352,26 @@
         function toggleSubtask(index) {
             try {
                 const checkbox = document.getElementById(`st-${index}`);
-                const tasks = getStorageData(currentModule.storageKey);
-                const taskData = tasks[currentEditingTaskId];
+
+                // Use stored project info or get fresh data
+                let data = window.notesTaskData || getStorageData(currentModule.storageKey);
+                let foundProject = window.notesTaskProject;
+
+                if (!data || !data.projects || !foundProject) {
+                    console.error('Failed to get task project');
+                    return;
+                }
+
+                const taskData = foundProject.tasks[currentEditingTaskId];
 
                 if (taskData.subtasks && taskData.subtasks[index]) {
                     // Save state for undo/redo before making changes
                     UndoRedoManager.saveState(`Subtask toggled`);
 
                     taskData.subtasks[index].completed = checkbox.checked;
-                    tasks[currentEditingTaskId] = taskData;
+                    foundProject.tasks[currentEditingTaskId] = taskData;
 
-                    if (!setStorageData(currentModule.storageKey, tasks)) {
+                    if (!setStorageData(currentModule.storageKey, data)) {
                         console.error('Failed to save subtask toggle');
                         return;
                     }
@@ -6329,17 +6387,40 @@
             if (!currentEditingTaskId) return;
 
             try {
-                const tasks = getStorageData(currentModule.storageKey);
-                const taskData = tasks[currentEditingTaskId];
+                // Use stored project info or get fresh data
+                let data = window.notesTaskData || getStorageData(currentModule.storageKey);
+                let foundProject = window.notesTaskProject;
+
+                if (!data || !data.projects) {
+                    console.error('Failed to get storage data');
+                    return;
+                }
+
+                // If project not cached, search for it
+                if (!foundProject) {
+                    for (const [projectId, project] of Object.entries(data.projects)) {
+                        if (project.tasks && project.tasks[currentEditingTaskId]) {
+                            foundProject = { id: projectId, ...project };
+                            break;
+                        }
+                    }
+                }
+
+                if (!foundProject) {
+                    console.error('Project not found for task');
+                    return;
+                }
+
+                const taskData = foundProject.tasks[currentEditingTaskId];
 
                 if (taskData && typeof taskData === 'object') {
                     // Save state for undo/redo before making changes
                     UndoRedoManager.saveState(`Task notes updated`);
 
                     taskData.notes = document.getElementById('notesText').value;
-                    tasks[currentEditingTaskId] = taskData;
+                    foundProject.tasks[currentEditingTaskId] = taskData;
 
-                    if (!setStorageData(currentModule.storageKey, tasks)) {
+                    if (!setStorageData(currentModule.storageKey, data)) {
                         console.error('Failed to save task details');
                         return;
                     }

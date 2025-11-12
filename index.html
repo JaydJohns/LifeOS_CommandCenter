@@ -5387,6 +5387,10 @@
                 console.log(`Task created successfully with ID: ${taskId}`);
                 if (tagsArray.length > 0) {
                     console.log(`Added ${tagsArray.length} tags to new task: ${tagsArray.join(', ')}`);
+                    // Register each tag in the global registry
+                    tagsArray.forEach(tag => {
+                        createTag(tag);
+                    });
                 }
 
                 input.value = '';
@@ -5395,7 +5399,12 @@
                 document.getElementById('recurrenceSelect').value = 'none';
                 if (creationTagInput) {
                     creationTagInput.value = '';
+                    creationTagInput.blur(); // Remove focus from tag input
                 }
+
+                // Hide any visible autocomplete popups
+                hideTagAutocomplete();
+
                 renderDetailView(currentModule);
                 renderTagSidebar();
                 renderDashboard();

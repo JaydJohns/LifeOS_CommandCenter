@@ -2157,6 +2157,11 @@
                             <div class="form-row">
                                 <input type="number" id="estimateInput" class="input-field" placeholder="TIME ESTIMATE (hours)" min="0" max="1000" step="0.5" value="1">
                             </div>
+                            <div class="form-row">
+                                <div id="creationTagsContainer" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; align-items: center;">
+                                    <input type="text" id="creationTagInput" class="task-tag-input" placeholder="+ add tags (space-separated)">
+                                </div>
+                            </div>
                             <button class="btn" onclick="addDetailTask()">EXECUTE TASK</button>
                         </div>
                     </div>
@@ -4835,6 +4840,11 @@
             const tagInputs = document.querySelectorAll('.task-tag-input');
 
             tagInputs.forEach(input => {
+                // Skip the creation tag input - it has special handling
+                if (input.id === 'creationTagInput') {
+                    return;
+                }
+
                 // Remove existing listeners by cloning
                 const newInput = input.cloneNode(true);
                 input.parentNode.replaceChild(newInput, input);
@@ -4970,6 +4980,119 @@
                 }, true);
                 tagInputGlobalListenerAttached = true;
             }
+
+            // Set up listeners for creation tag input
+            attachCreationTagInputListeners();
+        }
+
+        /**
+         * Attach event listeners to the creation tag input field
+         * This input shows autocomplete suggestions but doesn't add tags directly
+         * Tags are added when the task is created in addDetailTask()
+         */
+        function attachCreationTagInputListeners() {
+            const creationInput = document.getElementById('creationTagInput');
+            if (!creationInput) return;
+
+            // Remove existing listeners by cloning
+            const newInput = creationInput.cloneNode(true);
+            creationInput.parentNode.replaceChild(newInput, creationInput);
+
+            // Input event for autocomplete
+            newInput.addEventListener('input', (e) => {
+                const inputValue = e.target.value.trim();
+
+                // Parse all tags from input (space-separated)
+                const tags = inputValue
+                    .split(/\s+/)
+                    .filter(tag => tag.length > 0);
+
+                // Get the last incomplete tag for suggestions
+                const lastTag = tags[tags.length - 1] || '';
+
+                if (lastTag.length > 0) {
+                    const suggestions = getTagSuggestions(lastTag, []);
+                    showTagAutocomplete(e.target, suggestions);
+                } else {
+                    hideTagAutocomplete();
+                }
+            });
+
+            // Keydown event for navigation
+            newInput.addEventListener('keydown', (e) => {
+                const popup = document.querySelector('.tag-autocomplete-popup');
+
+                if (e.key === 'Enter') {
+                    // Don't prevent default for creation input - let form submission work
+                    // Tags are added via addDetailTask() on form submit
+                    hideTagAutocomplete();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    hideTagAutocomplete();
+                } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    if (!popup) return;
+
+                    e.preventDefault();
+                    const items = popup.querySelectorAll('.tag-suggestion');
+                    const currentlySelected = popup.querySelector('.tag-suggestion.selected');
+
+                    if (e.key === 'ArrowDown') {
+                        if (!currentlySelected) {
+                            items[0].classList.add('selected');
+                        } else {
+                            const nextItem = currentlySelected.nextElementSibling;
+                            if (nextItem) {
+                                currentlySelected.classList.remove('selected');
+                                nextItem.classList.add('selected');
+                                nextItem.scrollIntoView({ block: 'nearest' });
+                            }
+                        }
+                    } else {
+                        if (currentlySelected) {
+                            const prevItem = currentlySelected.previousElementSibling;
+                            if (prevItem) {
+                                currentlySelected.classList.remove('selected');
+                                prevItem.classList.add('selected');
+                                prevItem.scrollIntoView({ block: 'nearest' });
+                            }
+                        }
+                    }
+                } else if (e.key === 'Tab') {
+                    // Accept selected suggestion on Tab
+                    if (popup) {
+                        const selected = popup.querySelector('.tag-suggestion.selected');
+                        if (selected) {
+                            e.preventDefault();
+                            const tagName = selected.querySelector('.tag-suggestion-name').textContent;
+                            // Append suggestion to input
+                            const currentTags = e.target.value.trim().split(/\s+/);
+                            currentTags[currentTags.length - 1] = tagName;
+                            e.target.value = currentTags.join(' ') + ' ';
+                            hideTagAutocomplete();
+                        }
+                    }
+                }
+            });
+
+            // Focus event
+            newInput.addEventListener('focus', (e) => {
+                const inputValue = e.target.value.trim();
+                if (inputValue.length > 0) {
+                    const tags = inputValue.split(/\s+/).filter(t => t.length > 0);
+                    const lastTag = tags[tags.length - 1] || '';
+                    if (lastTag.length > 0) {
+                        const suggestions = getTagSuggestions(lastTag, []);
+                        showTagAutocomplete(e.target, suggestions);
+                    }
+                }
+            });
+
+            // Blur event - hide autocomplete
+            newInput.addEventListener('blur', (e) => {
+                setTimeout(() => {
+                    hideTagAutocomplete();
+                }, 200);
+            });
         }
 
         function toggleProject(header) {
@@ -5230,6 +5353,14 @@
                     console.log(`Using first project: ${projectId}`);
                 }
 
+                // Extract tags from creation form
+                const creationTagInput = document.getElementById('creationTagInput');
+                const tagsFromInput = creationTagInput ? creationTagInput.value.trim() : '';
+                const tagsArray = tagsFromInput
+                    .split(/\s+/)
+                    .filter(tag => tag.length > 0 && isValidTagName(tag))
+                    .map(tag => tag.toLowerCase());
+
                 // Create task data with tags support
                 const taskData = {
                     completed: false,
@@ -5239,7 +5370,7 @@
                     label: taskLabel,
                     createdAt: Date.now(),
                     dueDate: Date.now(),
-                    tags: []
+                    tags: tagsArray
                 };
 
                 // Add task to project
@@ -5251,11 +5382,17 @@
                     return;
                 }
                 console.log(`Task created successfully with ID: ${taskId}`);
+                if (tagsArray.length > 0) {
+                    console.log(`Added ${tagsArray.length} tags to new task: ${tagsArray.join(', ')}`);
+                }
 
                 input.value = '';
                 document.getElementById('estimateInput').value = '1';
                 document.getElementById('prioritySelect').value = 'medium';
                 document.getElementById('recurrenceSelect').value = 'none';
+                if (creationTagInput) {
+                    creationTagInput.value = '';
+                }
                 renderDetailView(currentModule);
                 renderDashboard();
                 updateGlobalStats();

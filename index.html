@@ -4535,12 +4535,33 @@
                                 </div>
                             </div>
                             <div id="today-tasks-${priority}" style="display: ${isCollapsed ? 'none' : 'flex'}; flex-direction: column; gap: 8px; margin-top: 10px;">
-                                ${tasks.slice(0, 5).map(task => `
+                                ${tasks.slice(0, 5).map(task => {
+                                    const subtasks = task.subtasks ? task.subtasks.filter(st => typeof st === 'object') : [];
+                                    const completedSubtasks = subtasks.filter(st => st.completed).length;
+                                    return `
                                     <div style="background: rgba(0, 212, 255, 0.05); padding: 8px; border-radius: 3px; border-left: 2px solid ${config.color}; font-size: 0.8rem;">
-                                        <div style="color: var(--text-primary); margin-bottom: 3px;">${task.moduleIcon} ${task.label}</div>
-                                        <div style="color: var(--text-secondary); font-size: 0.75rem;">${task.moduleName} • Est: ${task.estimate || 0}h</div>
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                            <div>
+                                                <div style="color: var(--text-primary); margin-bottom: 3px;">${task.moduleIcon} ${task.label}</div>
+                                                <div style="color: var(--text-secondary); font-size: 0.75rem;">${task.moduleName} • Est: ${task.estimate || 0}h</div>
+                                            </div>
+                                            ${subtasks.length > 0 ? `
+                                                <span style="
+                                                    background: rgba(0, 212, 255, 0.2);
+                                                    border: 1px solid rgba(0, 212, 255, 0.3);
+                                                    color: var(--primary);
+                                                    font-size: 0.65rem;
+                                                    padding: 1px 4px;
+                                                    border-radius: 2px;
+                                                    font-weight: 600;
+                                                    white-space: nowrap;
+                                                " title="Subtasks: ${completedSubtasks}/${subtasks.length} complete">
+                                                    📋 ${completedSubtasks}/${subtasks.length}
+                                                </span>
+                                            ` : ''}
+                                        </div>
                                     </div>
-                                `).join('')}
+                                `}).join('')}
                                 ${tasks.length > 5 ? `<div style="color: var(--text-secondary); font-size: 0.75rem; text-align: center;">+${tasks.length - 5} more tasks</div>` : ''}
                             </div>
                         </div>
@@ -4890,6 +4911,11 @@
                 const recurrence = typeof taskData === 'object' ? taskData.recurrence : 'none';
                 const taskTags = typeof taskData === 'object' && Array.isArray(taskData.tags) ? taskData.tags : [];
 
+                // Get subtask info
+                const subtasks = typeof taskData === 'object' && Array.isArray(taskData.subtasks) ? taskData.subtasks : [];
+                const completedSubtasks = subtasks.filter(st => st.completed).length;
+                const hasSubtasks = subtasks.length > 0;
+
                 const recurrenceEmoji = {
                     'daily': '📅',
                     'weekly': '📆',
@@ -4938,6 +4964,25 @@
                                 <!-- Completion checkbox -->
                                 <input type="checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''} onchange="updateTaskInProject('${storageKey}', '${project.id}', '${taskId}')">
                                 <label for="${taskId}" style="margin: 0;">${label}</label>
+                                <!-- Subtask indicator -->
+                                ${hasSubtasks ? `
+                                    <span style="
+                                        background: rgba(0, 212, 255, 0.2);
+                                        border: 1px solid rgba(0, 212, 255, 0.4);
+                                        color: var(--primary);
+                                        font-size: 0.7rem;
+                                        padding: 2px 6px;
+                                        border-radius: 3px;
+                                        font-weight: 600;
+                                        white-space: nowrap;
+                                        cursor: pointer;
+                                        transition: all 0.2s;
+                                    "
+                                    title="Click Notes to view subtasks"
+                                    onclick="openNotesModal('${taskId}')">
+                                        📋 ${completedSubtasks}/${subtasks.length}
+                                    </span>
+                                ` : ''}
                             </div>
                             ${tagsHTML}
                             <div class="task-meta">

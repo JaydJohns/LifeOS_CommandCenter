@@ -130,7 +130,7 @@
             flex-wrap: wrap;
         }
 
-        header > * {
+        header > *:not(h1):not(.subtitle) {
             flex-shrink: 0;
         }
 
@@ -181,7 +181,7 @@
             text-transform: uppercase;
             margin-top: 10px;
             animation: fadeInUp 0.8s ease-out 0.2s both;
-            order: 2;
+            order: 4;
             flex: 0 0 100%;
             text-align: center;
         }
@@ -1983,10 +1983,13 @@
             h1 {
                 font-size: 2.5rem;
                 margin-bottom: 5px;
+                order: 2;
+                flex: 1 1 auto;
             }
 
             .subtitle {
                 margin-top: 5px;
+                order: 4;
             }
 
             .status-line {
@@ -1999,6 +2002,7 @@
             .theme-toggle {
                 font-size: 0.75rem;
                 padding: 6px 12px;
+                order: 3;
             }
 
             .section-divider {
@@ -2041,6 +2045,7 @@
                 flex: 0 0 100%;
                 margin-top: 2px;
                 font-size: 0.8rem;
+                order: 4;
             }
 
             .status-line {
